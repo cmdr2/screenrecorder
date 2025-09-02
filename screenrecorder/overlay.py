@@ -70,7 +70,7 @@ class OverlayApp:
         self.root.deiconify()
         self.root.lift()
         self.ui_panel.show()
-        self.ui_panel.set_recording_state(False)
+        self.root.after(0, lambda: self.ui_panel.set_recording_state(False))
         self._redraw_overlay()
         self._update_clickthrough()
 
