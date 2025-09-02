@@ -1,7 +1,7 @@
 import tkinter as tk
 import ctypes
 from .win32_utils import passthrough_mouse_clicks, capture_mouse_clicks
-from .config import load_region, save_region
+from .config import get_region, set_region
 from .ui_buttons import UIButtonPanel
 
 
@@ -12,7 +12,7 @@ class OverlayApp:
 
     def __init__(self, recorder):
         self.recorder = recorder
-        self.recorder.region = load_region()
+        self.recorder.region = get_region()
         self.root = tk.Tk()
         self.root.withdraw()
         self.root.overrideredirect(True)
@@ -99,7 +99,7 @@ class OverlayApp:
         w, h = abs(x1 - x0), abs(y1 - y0)
         if w > 10 and h > 10:
             self.recorder.region = (x, y, w, h)
-            save_region(self.recorder.region)
+            set_region(self.recorder.region)
             self.selecting = False
             self.start_x = self.start_y = None
             self.enter_recording_mode()
