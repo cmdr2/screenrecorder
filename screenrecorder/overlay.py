@@ -2,6 +2,7 @@ import tkinter as tk
 import ctypes
 from .win32_utils import passthrough_mouse_clicks, capture_mouse_clicks
 from .config import load_region, save_region
+from .ui_buttons import UIButtonPanel
 
 
 class OverlayApp:
@@ -22,24 +23,7 @@ class OverlayApp:
         self.canvas = tk.Canvas(self.root, width=sw, height=sh, bg="grey", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        self.button_win = tk.Toplevel(self.root)
-        self.button_win.overrideredirect(True)
-        self.button_win.attributes("-topmost", True)
-        self.button_win.withdraw()
-
-        self.record_btn = tk.Button(
-            self.button_win, text="Record", command=self.toggle_recording, font=("Arial", 14), bg="red", fg="white"
-        )
-        self.select_btn = tk.Button(
-            self.button_win,
-            text="Select new region",
-            command=self.enter_selection_mode,
-            font=("Arial", 14),
-            bg="blue",
-            fg="white",
-        )
-        self.record_btn.pack(side="left", padx=10)
-        self.select_btn.pack(side="left", padx=10)
+        self.ui_panel = UIButtonPanel(self.root, on_record=self.toggle_recording, on_select=self.enter_selection_mode)
 
         self.mode = self.MODE_WAITING
         self.selecting = False
@@ -66,7 +50,7 @@ class OverlayApp:
         self.mode = self.MODE_WAITING
         self.selecting = False
         self.root.withdraw()
-        self.button_win.withdraw()
+        self.ui_panel.hide()
         self.root.after(100, self._update_clickthrough)
 
     def enter_selection_mode(self):
@@ -75,7 +59,7 @@ class OverlayApp:
         self.start_x = self.start_y = None
         self.root.deiconify()
         self.root.lift()
-        self.button_win.withdraw()
+        self.ui_panel.hide()
         self.show_message("Click-and-drag to select a region")
         self._redraw_overlay()
         self._update_clickthrough()
@@ -85,21 +69,19 @@ class OverlayApp:
         self.selecting = False
         self.root.deiconify()
         self.root.lift()
-        self.button_win.deiconify()
-        self.button_win.lift()
-        self.record_btn.config(text="Record", bg="red", state="normal")
-        self.select_btn.config(state="normal")
+        self.ui_panel.show()
+        self.ui_panel.set_recording_state(False)
         self._redraw_overlay()
         self._update_clickthrough()
 
     def toggle_recording(self):
         if self.recorder.recording:
             self.recorder.stop()
-            self.record_btn.config(text="Record", bg="red")
+            self.ui_panel.set_recording_state(False)
             self.enter_waiting_mode()
         else:
             self.recorder.start()
-            self.record_btn.config(text="Stop recording", bg="green")
+            self.ui_panel.set_recording_state(True)
 
     def _on_mouse_down(self, event):
         if self.mode != self.MODE_SELECTION:
