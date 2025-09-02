@@ -5,7 +5,7 @@ from .config import get_region, set_region
 from .ui_buttons import UIButtonPanel
 
 
-class OverlayApp:
+class ScreenRecorderWindow:
     MODE_WAITING = "waiting"
     MODE_SELECTION = "selection"
     MODE_RECORDING = "recording"
@@ -150,5 +150,5 @@ class OverlayApp:
         self.recorder.stop()
         self.enter_waiting_mode()
 
-    def run(self):
+    def mainloop(self):
         self.root.mainloop()
