@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkfontawesome import icon_to_image
 from .config import get_panel_position, set_panel_position
 
 
@@ -9,8 +10,10 @@ class UIButtonPanel:
         self.button_win.attributes("-topmost", True)
         self.button_win.withdraw()
 
-        # Drag icon (using Unicode or you can use an image)
-        self.drag_icon = tk.Label(self.button_win, text="⋮⋮", font=("Arial", 16), bg="#ddd", width=2)
+        # Drag icon using FontAwesome (tkfontawesome)
+        drag_img = icon_to_image("grip-vertical", fill="#000", scale_to_width=10)
+        self.drag_icon = tk.Label(self.button_win, image=drag_img, bg="#fff", width=28, height=28)
+        self.drag_icon.image = drag_img  # Keep reference to avoid garbage collection
         self.drag_icon.pack(side="left", padx=(5, 0), pady=2)
 
         self.record_btn = tk.Button(

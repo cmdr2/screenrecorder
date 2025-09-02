@@ -4,3 +4,4 @@ pyautogui
 pystray
 pillow
 keyboard
+tkfontawesome
