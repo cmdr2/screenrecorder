@@ -9,6 +9,10 @@ class UIButtonPanel:
         self.button_win.attributes("-topmost", True)
         self.button_win.withdraw()
 
+        # Drag icon (using Unicode or you can use an image)
+        self.drag_icon = tk.Label(self.button_win, text="⋮⋮", font=("Arial", 16), bg="#ddd", width=2)
+        self.drag_icon.pack(side="left", padx=(5, 0), pady=2)
+
         self.record_btn = tk.Button(
             self.button_win, text="Record", command=on_record, font=("Arial", 14), bg="red", fg="white"
         )
@@ -24,9 +28,10 @@ class UIButtonPanel:
         self.select_btn.pack(side="left", padx=10)
 
         self._drag_data = {"x": 0, "y": 0}
-        self.button_win.bind("<ButtonPress-1>", self._on_drag_start)
-        self.button_win.bind("<B1-Motion>", self._on_drag_motion)
-        self.button_win.bind("<ButtonRelease-1>", self._on_drag_end)
+        # Bind drag events only to the drag icon
+        self.drag_icon.bind("<ButtonPress-1>", self._on_drag_start)
+        self.drag_icon.bind("<B1-Motion>", self._on_drag_motion)
+        self.drag_icon.bind("<ButtonRelease-1>", self._on_drag_end)
 
         self.position = get_panel_position()
 
