@@ -1,6 +1,37 @@
 import tkinter as tk
+
 from tkfontawesome import icon_to_image
 from .config import get_panel_position, set_panel_position
+
+# --- Style Constants ---
+PANEL_BG = "#23272f"
+PANEL_BORDER_COLOR = "#3a3f4b"
+PANEL_BORDER_WIDTH = 1
+PANEL_PADX = 10
+PANEL_PADY = 5
+
+DRAG_ICON_COLOR = "#888"
+DRAG_ICON_SIZE = 22
+DRAG_ICON_BG = PANEL_BG
+DRAG_ICON_PADX = (8, 0)
+DRAG_ICON_PADY = 6
+
+BTN_BG = "#2c313c"
+BTN_FG = "#fff"
+BTN_ACTIVE_BG = "#344055"
+BTN_ACTIVE_FG = "#fff"
+BTN_BORDER_COLOR = "#3a3f4b"
+BTN_BORDER_WIDTH = 2
+BTN_PADX = 12
+BTN_PADY = 6
+BTN_FONT = ("Segoe UI", 13, "bold")
+BTN_RELIEF = "flat"
+
+RECORD_ICON_COLOR = "#e74c3c"
+STOP_ICON_COLOR = "#e74c3c"
+REGION_ICON_COLOR = "#3498db"
+ICON_SIZE = 18
+BTN_PACK_PADX = 8
 
 
 class UIButtonPanel:
@@ -11,57 +42,78 @@ class UIButtonPanel:
         self.button_win.overrideredirect(True)
         self.button_win.attributes("-topmost", True)
         self.button_win.withdraw()
-        self.button_win.configure(bg="#23272f", bd=0, highlightthickness=0)
+        self.button_win.configure(
+            bg=PANEL_BG,
+            bd=PANEL_BORDER_WIDTH,
+            highlightbackground=PANEL_BORDER_COLOR,
+            highlightcolor=PANEL_BORDER_COLOR,
+            highlightthickness=PANEL_BORDER_WIDTH,
+            padx=PANEL_PADX,
+            pady=PANEL_PADY,
+        )
 
         # Drag icon (FontAwesome)
-        drag_img = icon_to_image("grip-vertical", fill="#888", scale_to_width=10)
-        self.drag_icon = tk.Label(self.button_win, image=drag_img, bg="#23272f", width=32, height=32, bd=0)
+        drag_img = icon_to_image("grip-vertical", fill=DRAG_ICON_COLOR, scale_to_width=DRAG_ICON_SIZE / 2)
+        self.drag_icon = tk.Label(
+            self.button_win,
+            image=drag_img,
+            bg=DRAG_ICON_BG,
+            width=32,
+            height=32,
+            bd=0,
+            highlightbackground=PANEL_BORDER_COLOR,
+            highlightthickness=0,
+        )
         self.drag_icon.image = drag_img
-        self.drag_icon.pack(side="left", padx=(8, 0), pady=6)
+        self.drag_icon.pack(side="left", padx=DRAG_ICON_PADX, pady=DRAG_ICON_PADY)
 
         # Record button with icon
-        rec_icon = icon_to_image("circle", fill="#e74c3c", scale_to_width=18)
+        rec_icon = icon_to_image("circle", fill=RECORD_ICON_COLOR, scale_to_width=ICON_SIZE)
         self.record_btn = tk.Button(
             self.button_win,
             text=" Record",
             image=rec_icon,
             compound="left",
             command=on_record,
-            font=("Segoe UI", 13, "bold"),
-            bg="#2c313c",
-            fg="#fff",
-            activebackground="#344055",
-            activeforeground="#fff",
-            bd=0,
-            relief="flat",
-            highlightthickness=0,
-            padx=12,
-            pady=6,
+            font=BTN_FONT,
+            bg=BTN_BG,
+            fg=BTN_FG,
+            activebackground=BTN_ACTIVE_BG,
+            activeforeground=BTN_ACTIVE_FG,
+            bd=BTN_BORDER_WIDTH,
+            relief=BTN_RELIEF,
+            highlightbackground=BTN_BORDER_COLOR,
+            highlightcolor=BTN_BORDER_COLOR,
+            highlightthickness=BTN_BORDER_WIDTH,
+            padx=BTN_PADX,
+            pady=BTN_PADY,
         )
         self.record_btn.image = rec_icon
-        self.record_btn.pack(side="left", padx=8)
+        self.record_btn.pack(side="left", padx=BTN_PACK_PADX)
 
         # Region select button with icon
-        region_icon = icon_to_image("object-group", fill="#3498db", scale_to_width=18)
+        region_icon = icon_to_image("object-group", fill=REGION_ICON_COLOR, scale_to_width=ICON_SIZE)
         self.select_btn = tk.Button(
             self.button_win,
-            text=" Region",
+            text="Select region to capture",
             image=region_icon,
             compound="left",
             command=on_select,
-            font=("Segoe UI", 13, "bold"),
-            bg="#2c313c",
-            fg="#fff",
-            activebackground="#344055",
-            activeforeground="#fff",
-            bd=0,
-            relief="flat",
-            highlightthickness=0,
-            padx=12,
-            pady=6,
+            font=BTN_FONT,
+            bg=BTN_BG,
+            fg=BTN_FG,
+            activebackground=BTN_ACTIVE_BG,
+            activeforeground=BTN_ACTIVE_FG,
+            bd=BTN_BORDER_WIDTH,
+            relief=BTN_RELIEF,
+            highlightbackground=BTN_BORDER_COLOR,
+            highlightcolor=BTN_BORDER_COLOR,
+            highlightthickness=BTN_BORDER_WIDTH,
+            padx=BTN_PADX,
+            pady=BTN_PADY,
         )
         self.select_btn.image = region_icon
-        self.select_btn.pack(side="left", padx=8)
+        self.select_btn.pack(side="left", padx=BTN_PACK_PADX)
 
         # Rounded corners for panel and buttons (simulate with padding and colors)
         self.button_win.update_idletasks()
@@ -121,12 +173,32 @@ class UIButtonPanel:
 
     def set_recording_state(self, recording):
         if recording:
-            stop_icon = icon_to_image("stop", fill="#e74c3c", scale_to_width=18)
-            self.record_btn.config(text=" Stop", image=stop_icon, bg="#27ae60", fg="#fff", activebackground="#2ecc71")
+            stop_icon = icon_to_image("stop", fill=STOP_ICON_COLOR, scale_to_width=ICON_SIZE)
+            self.record_btn.config(
+                text=" Stop",
+                image=stop_icon,
+                bg="#27ae60",
+                fg=BTN_FG,
+                activebackground="#2ecc71",
+                activeforeground=BTN_ACTIVE_FG,
+                highlightbackground=BTN_BORDER_COLOR,
+                highlightcolor=BTN_BORDER_COLOR,
+                highlightthickness=BTN_BORDER_WIDTH,
+            )
             self.record_btn.image = stop_icon
         else:
-            rec_icon = icon_to_image("circle", fill="#e74c3c", scale_to_width=18)
-            self.record_btn.config(text=" Record", image=rec_icon, bg="#2c313c", fg="#fff", activebackground="#344055")
+            rec_icon = icon_to_image("circle", fill=RECORD_ICON_COLOR, scale_to_width=ICON_SIZE)
+            self.record_btn.config(
+                text=" Record",
+                image=rec_icon,
+                bg=BTN_BG,
+                fg=BTN_FG,
+                activebackground=BTN_ACTIVE_BG,
+                activeforeground=BTN_ACTIVE_FG,
+                highlightbackground=BTN_BORDER_COLOR,
+                highlightcolor=BTN_BORDER_COLOR,
+                highlightthickness=BTN_BORDER_WIDTH,
+            )
             self.record_btn.image = rec_icon
             self.record_btn.config(state="normal")
             self.select_btn.config(state="normal")
