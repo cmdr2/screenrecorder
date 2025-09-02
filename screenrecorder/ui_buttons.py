@@ -14,7 +14,7 @@ class UIButtonPanel:
         self.button_win.configure(bg="#23272f", bd=0, highlightthickness=0)
 
         # Drag icon (FontAwesome)
-        drag_img = icon_to_image("grip-lines", fill="#888", scale_to_width=22)
+        drag_img = icon_to_image("grip-vertical", fill="#888", scale_to_width=10)
         self.drag_icon = tk.Label(self.button_win, image=drag_img, bg="#23272f", width=32, height=32, bd=0)
         self.drag_icon.image = drag_img
         self.drag_icon.pack(side="left", padx=(8, 0), pady=6)
