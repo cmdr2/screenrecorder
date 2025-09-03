@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Canvas
 from tkfontawesome import icon_to_image
-from screenrecorder import theme
+from . import theme
 
 
 class VideoPlayerControls:
@@ -20,8 +20,8 @@ class VideoPlayerControls:
 
         # Play/Pause Button (icon)
         self.is_playing = False
-        self.play_icon = icon_to_image("play", fill=theme.BTN_FG, scale_to_width=22)
-        self.pause_icon = icon_to_image("pause", fill=theme.BTN_FG, scale_to_width=22)
+        self.play_icon = icon_to_image("play", fill=theme.COLOR_FG, scale_to_width=22)
+        self.pause_icon = icon_to_image("pause", fill=theme.COLOR_FG, scale_to_width=22)
         self.play_pause_btn = tk.Button(
             self.frame,
             image=self.play_icon,
