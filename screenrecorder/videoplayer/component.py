@@ -93,15 +93,19 @@ class VideoPlayerComponent:
         return self.player.paused
 
     @property
-    def current_frame(self):
-        return self.player.frame_pos
+    def currentTime(self):
+        return self.player.currentTime
 
-    @current_frame.setter
-    def current_frame(self, frame_number):
+    @currentTime.setter
+    def currentTime(self, seconds):
         try:
-            self.player.seek(int(frame_number))
+            self.player.currentTime = float(seconds)
         except Exception:
             pass
+
+    @property
+    def duration(self):
+        return self.player.duration
 
     def play(self):
         self.player.play()

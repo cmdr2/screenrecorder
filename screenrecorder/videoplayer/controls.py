@@ -95,21 +95,15 @@ class VideoPlayerControls:
                     self.is_playing = playing_state
                     self._update_play_pause_button()
 
-            if self.videoplayer.cap:
-                # Get current time from frame position and FPS
-                fps = self.videoplayer.cap.get(5) or 25
-                current_time = self.videoplayer.frame_pos / fps
+            current_time = self.videoplayer.currentTime
+            total_time = self.videoplayer.duration
 
-                # Get total duration from frame count and FPS
-                frame_count = self.videoplayer.cap.get(7)
-                total_time = frame_count / fps if frame_count else 0
+            # Update time display
+            self.update_time(current_time, total_time)
 
-                # Update time display
-                self.update_time(current_time, total_time)
-
-                # Update slider position
-                if total_time > 0:
-                    self.set_slider(current_time, total_time)
+            # Update slider position
+            if total_time > 0:
+                self.set_slider(current_time, total_time)
         except Exception as e:
             # Print errors to debug
             print(f"Error updating display: {e}")
@@ -192,8 +186,5 @@ class VideoPlayerControls:
         value = max(0, min(self.slider_max, value))
         self.set_slider(value, self.slider_max)
 
-        # Calculate frame number from time value (float)
-        if immediate and self.videoplayer.cap:
-            fps = self.videoplayer.cap.get(5) or 25
-            frame_number = int(value * fps)
-            self.videoplayer.seek(frame_number)
+        if immediate:
+            self.videoplayer.currentTime = value

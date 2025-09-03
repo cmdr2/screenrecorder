@@ -72,28 +72,41 @@ class OpenCVVideoPlayer:
         # Trigger pause event when stopping
         self.dispatch_event("pause")
 
-    def seek(self, frame_number):
-        if self.cap:
-            # Temporarily pause playback to avoid thread conflicts during seeking
-            was_playing = self.playing and not self.paused
-            if was_playing:
-                self.paused = True
-                # Small delay to ensure the playback thread recognizes the pause
-                time.sleep(0.1)
+    @property
+    def currentTime(self):
+        """Get or set the current playback time in seconds."""
+        if not self.cap:
+            return 0.0
+        fps = self.cap.get(cv2.CAP_PROP_FPS)
+        frame = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        return frame / fps if fps > 0 else 0.0
 
-            # Now safe to seek
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-            self.frame_pos = frame_number
+    @currentTime.setter
+    def currentTime(self, seconds):
+        if not self.cap:
+            return
+        was_playing = self.playing and not self.paused
+        if was_playing:
+            self.paused = True
+            time.sleep(0.1)  # Allow thread to pause
+        fps = self.cap.get(cv2.CAP_PROP_FPS)
+        frame_number = int(seconds * fps) if fps > 0 else 0
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+        self.frame_pos = frame_number
+        # If paused, display the frame immediately
+        if not was_playing or self.paused:
+            self._display_current_frame()
+        if was_playing:
+            self.paused = False
 
-            # If paused, display the frame immediately
-            if not was_playing:
-                self._display_current_frame()
-
-            # Resume playback if it was playing before
-            if was_playing:
-                self.paused = False
-
-            self.dispatch_event("seek", frame_number=frame_number)
+    @property
+    def duration(self):
+        """Get the duration of the video in seconds."""
+        if not self.cap:
+            return 0.0
+        frame_count = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        fps = self.cap.get(cv2.CAP_PROP_FPS)
+        return frame_count / fps if fps > 0 else 0.0
 
     def _play_loop(self):
         while self.playing and self.cap and self.cap.isOpened():
