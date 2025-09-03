@@ -40,17 +40,15 @@ class VideoPlayerControls:
         self.time_label.pack(side=tk.LEFT, padx=8)
 
         # Custom Thin Slider
-        self.slider_length = 220
         self.slider_height = 8  # Visual height of the slider line
         self.slider_clickable_height = 28  # Height of the clickable area (matches font size)
         self.slider_canvas = Canvas(
             self.frame,
-            width=self.slider_length,
             height=self.slider_clickable_height,
             bg=theme.COLOR_BG,
             highlightthickness=0,
         )
-        self.slider_canvas.pack(side=tk.LEFT, padx=8)
+        self.slider_canvas.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=8)
         self.slider_canvas.bind("<Button-1>", self._on_slider_click)
         self.slider_canvas.bind("<B1-Motion>", self._on_slider_drag)
         self.slider_canvas.bind("<ButtonRelease-1>", self._on_slider_release)
@@ -150,13 +148,14 @@ class VideoPlayerControls:
             return
 
         self.slider_canvas.delete("all")
-        # Center the slider line vertically in the clickable area
+        # Get current width dynamically
+        slider_length = self.slider_canvas.winfo_width()
         center_y = self.slider_clickable_height // 2
         # Draw background line (thin)
-        self.slider_canvas.create_line(0, center_y, self.slider_length, center_y, fill=theme.COLOR_TERTIARY, width=3)
+        self.slider_canvas.create_line(0, center_y, slider_length, center_y, fill=theme.COLOR_TERTIARY, width=3)
         # Draw progress line
         if self.slider_max > 0:
-            progress = int((self.slider_value / self.slider_max) * self.slider_length)
+            progress = int((self.slider_value / self.slider_max) * slider_length)
         else:
             progress = 0
         self.slider_canvas.create_line(0, center_y, progress, center_y, fill=theme.COLOR_PRIMARY, width=3)
@@ -184,8 +183,9 @@ class VideoPlayerControls:
         self._slider_dragging = False
 
     def _seek_to(self, x, immediate=True):
-        # Calculate value as a float for finer granularity
-        value = (x / self.slider_length) * self.slider_max
+        # Use current slider width for calculation
+        slider_length = self.slider_canvas.winfo_width()
+        value = (x / slider_length) * self.slider_max
         value = max(0, min(self.slider_max, value))
         self.set_slider(value, self.slider_max)
 
