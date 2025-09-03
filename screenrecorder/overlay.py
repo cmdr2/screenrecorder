@@ -111,6 +111,11 @@ class OverlayWindow:
         x0, y0, x1, y1 = self.start_x, self.start_y, event.x, event.y
         x, y = min(x0, x1), min(y0, y1)
         w, h = abs(x1 - x0), abs(y1 - y0)
+
+        # round up to the nearest multiple of 2
+        w += 1 if w % 2 else 0
+        h += 1 if h % 2 else 0
+
         if w > 10 and h > 10:
             self.recorder.region = (x, y, w, h)
             set_region(self.recorder.region)
