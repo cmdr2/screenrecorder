@@ -1,53 +1,76 @@
-import cv2
-import numpy as np
-import pyautogui
-import threading
-import time
 import tempfile
+import os
+import subprocess
+import platform
 
 
 class ScreenRecorder:
     def __init__(self):
         self.recording = False
         self.thread = None
-        self.out = None
         self.region = None  # (x, y, w, h)
         self.temp_video_path = None
+        self.ffmpeg_process = None
 
     def start(self):
-        if self.recording or not self.region:
+        from .utils import get_ffmpeg_path
+
+        if self.recording:
             return
 
-        x, y, w, h = self.region
         self.recording = True
-        # Save to a temp file instead of output.mp4
         temp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
         self.temp_video_path = temp.name
         temp.close()
-        self.out = cv2.VideoWriter(self.temp_video_path, cv2.VideoWriter_fourcc(*"mp4v"), 30.0, (w, h))
-        self.thread = threading.Thread(target=self._record_loop, daemon=True)
-        self.thread.start()
+
+        ffmpeg_path = get_ffmpeg_path()
+        system = platform.system()
+        ffmpeg_cmd = [ffmpeg_path, "-y"]
+
+        if system == "Windows":
+            ffmpeg_cmd += ["-f", "gdigrab", "-framerate", "30"]
+            if self.region:
+                x, y, w, h = self.region
+                ffmpeg_cmd += ["-offset_x", str(x), "-offset_y", str(y), "-video_size", f"{w}x{h}"]
+            ffmpeg_cmd += ["-draw_mouse", "1", "-i", "desktop"]
+        elif system == "Linux":
+            ffmpeg_cmd += ["-f", "x11grab", "-framerate", "30"]
+            display = os.environ.get("DISPLAY", ":0.0")
+            if self.region:
+                x, y, w, h = self.region
+                ffmpeg_cmd += ["-video_size", f"{w}x{h}", "-i", f"{display}+{x},{y}"]
+            else:
+                ffmpeg_cmd += ["-i", display]
+        else:
+            raise RuntimeError(f"Unsupported OS for screen recording: {system}")
+
+        ffmpeg_cmd += ["-vcodec", "libx264", "-pix_fmt", "yuv420p", self.temp_video_path]
+        # Start ffmpeg in a new process group for signal handling
+        creationflags = 0
+        if system == "Windows":
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+        self.ffmpeg_process = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, creationflags=creationflags)
 
     def stop(self):
         if not self.recording:
             return
+
         self.recording = False
-        if self.out:
-            self.out.release()
-            self.out = None
+        if self.ffmpeg_process:
+            system = platform.system()
+            try:
+                if system == "Windows":
+                    # Send CTRL+C to the process group
+                    import signal
+
+                    self.ffmpeg_process.send_signal(signal.CTRL_BREAK_EVENT)
+                else:
+                    # Send SIGINT to the process group
+                    self.ffmpeg_process.send_signal(subprocess.signal.SIGINT)
+            except Exception:
+                # Fallback to terminate
+                self.ffmpeg_process.terminate()
+            self.ffmpeg_process.wait()
+            self.ffmpeg_process = None
+
         print(f"Saved to {self.temp_video_path}")
-
-    def _record_loop(self):
-        frame_time = 1.0 / 30.0
-        x, y, w, h = self.region
-        while self.recording:
-            start = time.time()
-            img = pyautogui.screenshot(region=(x, y, w, h))
-            frame = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-
-            if self.out is None:
-                break
-
-            self.out.write(frame)
-            elapsed = time.time() - start
-            time.sleep(max(0, frame_time - elapsed))

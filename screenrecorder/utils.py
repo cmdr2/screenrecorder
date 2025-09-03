@@ -93,3 +93,21 @@ def _copy_files_to_clipboard_windows(file_paths):
         print("Copied to clipboard")
     finally:
         wc.CloseClipboard()
+
+
+def get_ffmpeg_path():
+    import sys
+    import os
+
+    exe_dir = os.path.dirname(sys.executable)
+    module_dir = os.path.dirname(os.path.dirname(__file__))
+    ffmpeg_candidates = [
+        os.path.join(exe_dir, "bin", "ffmpeg"),
+        os.path.join(exe_dir, "bin", "ffmpeg.exe"),
+        os.path.join(module_dir, "bin", "ffmpeg"),
+        os.path.join(module_dir, "bin", "ffmpeg.exe"),
+    ]
+    for candidate in ffmpeg_candidates:
+        if os.path.exists(candidate):
+            return candidate
+    raise FileNotFoundError("ffmpeg not found in the bin folder next to screenrecorder or module.")
