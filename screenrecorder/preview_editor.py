@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import filedialog
 from tkinter import filedialog, messagebox
 from .videoplayer.component import VideoPlayerComponent
+from . import theme
 
 
 class PreviewEditorWindow:
@@ -34,13 +34,16 @@ class PreviewEditorWindow:
         toast = tk.Label(
             self.root,
             text=message,
-            bg="#333",
-            fg="#fff",
-            font=("Segoe UI", 12, "bold"),
-            padx=16,
-            pady=8,
-            bd=2,
-            relief="ridge",
+            bg=theme.TOAST_BG,
+            fg=theme.TOAST_FG,
+            font=theme.TOAST_FONT,
+            padx=theme.TOAST_PADX,
+            pady=theme.TOAST_PADY,
+            bd=theme.TOAST_BORDER_WIDTH,
+            relief="solid",
+            highlightbackground=theme.TOAST_BORDER_COLOR,
+            highlightcolor=theme.TOAST_BORDER_COLOR,
+            highlightthickness=theme.TOAST_BORDER_WIDTH,
         )
         # Place at bottom right corner
         self.root.update_idletasks()
