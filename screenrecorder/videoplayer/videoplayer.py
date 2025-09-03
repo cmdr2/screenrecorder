@@ -1,16 +1,18 @@
 """
-OpenCVVideoPlayer: Tkinter-embedded video player with play, pause, seek, load APIs.
+OpenCVVideoPlayer: Tkinter-embedded video player with play, pause, load APIs.
 """
 
 import cv2
-import threading
 from PIL import Image, ImageTk
 import tkinter as tk
 import time
 
+from .events import EventDispatcher
 
-class OpenCVVideoPlayer:
+
+class OpenCVVideoPlayer(EventDispatcher):
     def __init__(self, parent, width=640, height=480):
+        super().__init__()
         self.parent = parent
         self.width = width
         self.height = height
@@ -37,9 +39,6 @@ class OpenCVVideoPlayer:
 
         # Bind resize event
         self.frame.bind("<Configure>", self._on_resize)
-
-        # Event system
-        self._event_handlers = {"play": [], "pause": [], "ended": [], "seek": [], "load": []}
 
     def _on_resize(self, event):
         # Pause video if playing during resize to prevent crash
@@ -203,32 +202,3 @@ class OpenCVVideoPlayer:
         if self.video_img.winfo_exists():
             self.video_img.imgtk = imgtk
             self.video_img.config(image=imgtk)
-
-    # Event system methods
-    def add_event_listener(self, event_type, callback):
-        """Add an event listener for the specified event type
-
-        Args:
-            event_type: String representing the event ('play', 'pause', 'ended', etc)
-            callback: Function to call when the event is triggered. The callback will
-                      receive the event_type and any additional parameters as kwargs.
-        """
-        if event_type in self._event_handlers:
-            if callback not in self._event_handlers[event_type]:
-                self._event_handlers[event_type].append(callback)
-        else:
-            self._event_handlers[event_type] = [callback]
-
-    def remove_event_listener(self, event_type, callback):
-        """Remove an event listener for the specified event type"""
-        if event_type in self._event_handlers and callback in self._event_handlers[event_type]:
-            self._event_handlers[event_type].remove(callback)
-
-    def dispatch_event(self, event_type, **kwargs):
-        """Dispatch an event of the specified type with optional parameters"""
-        if event_type in self._event_handlers:
-            for callback in self._event_handlers[event_type]:
-                try:
-                    callback(event_type=event_type, **kwargs)
-                except Exception as e:
-                    print(f"Error in event listener: {e}")

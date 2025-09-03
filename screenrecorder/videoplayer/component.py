@@ -1,12 +1,14 @@
 import tkinter as tk
 from .videoplayer import OpenCVVideoPlayer
 from .controls import VideoPlayerControls
+from .events import EventDispatcher
 
 CONTROLS_BAR_HEIGHT_PX = 40
 
 
-class VideoPlayerComponent:
+class VideoPlayerComponent(EventDispatcher):
     def __init__(self, parent, video_path=None, width=640, height=480, controls=True, autoplay=False, loop=False):
+        super().__init__()
         self.parent = parent
         self._controls_enabled = controls
         self._autoplay = autoplay
@@ -20,7 +22,6 @@ class VideoPlayerComponent:
         self.frame.place(x=0, y=0, relwidth=1, relheight=1)
         self.player = OpenCVVideoPlayer(self.frame, width=width, height=height)
         self.player.frame.place(x=0, y=0, relwidth=1, relheight=1)
-        self.player.add_event_listener("ended", self._on_video_end)
 
         # Bind events to the overall component frame
         self.player.frame.bind("<Enter>", self._show_controls)
@@ -42,10 +43,19 @@ class VideoPlayerComponent:
             self.controls.frame.lift()
             self.seek_slider = self.controls.slider_canvas if hasattr(self.controls, "slider_canvas") else None
 
-        if video_path:
-            self.player.load(video_path)
-            if autoplay:
+        # Forward video player events to component listeners
+        self.player.add_event_listener("play", self._forward_event)
+        self.player.add_event_listener("pause", self._forward_event)
+        self.player.add_event_listener("ended", self._on_video_end)
+        self.player.add_event_listener("load", self._forward_event)
+
+        if self._src:
+            self.player.load(self._src)
+            if self._autoplay:
                 self.player.play()
+
+    def _forward_event(self, event_type, **kwargs):
+        self.dispatch_event(event_type, **kwargs)
 
     def _show_controls(self, event=None):
         if self.controls and self.controls.frame:
