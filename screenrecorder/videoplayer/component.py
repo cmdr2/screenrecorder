@@ -22,6 +22,8 @@ class VideoPlayerComponent:
         self.player.frame.bind("<Enter>", self._show_controls)
         self.player.frame.bind("<Leave>", self._hide_controls)
         self.player.frame.bind("<Button-1>", self._toggle_playback)
+        self.player.frame.bind("<Key-space>", self._toggle_playback)
+        self.player.frame.focus_set()  # Ensure frame can receive key events
 
         if self._controls_enabled:
             self.controls = VideoPlayerControls(self.player.frame, videoplayer=self.player)
