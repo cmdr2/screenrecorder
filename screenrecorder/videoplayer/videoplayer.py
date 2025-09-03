@@ -143,8 +143,7 @@ class OpenCVVideoPlayer:
 
     def _display_current_frame(self, advance=False):
         """
-        Display the current frame in the video_img label.
-        If advance=True, read the next frame; otherwise, show the current frame.
+        Optimized: Use OpenCV for resizing and minimize conversions to PIL for lower memory and latency.
         """
         if not self.cap:
             return
@@ -157,34 +156,43 @@ class OpenCVVideoPlayer:
                 return
             self.frame_pos = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
         else:
-            # Grab the frame at the current position
             pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
             ret, frame = self.cap.read()
             if not ret:
                 return
-            # If the frame position changed, seek back
             if int(pos) != self.frame_pos:
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.frame_pos)
                 ret, frame = self.cap.read()
                 if not ret:
                     return
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(frame)
 
         # Calculate aspect ratio preserving size
-        orig_w, orig_h = img.size
+        orig_h, orig_w = frame.shape[:2]
         target_w, target_h = self.width, self.height
         scale = min(target_w / orig_w, target_h / orig_h)
         new_w = int(orig_w * scale)
         new_h = int(orig_h * scale)
-        img_resized = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+        # Use OpenCV for resizing (faster than PIL)
+        frame_resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
         # Create black background and paste resized image centered
-        bg = Image.new("RGB", (target_w, target_h), (0, 0, 0))
-        paste_x = (target_w - new_w) // 2
-        paste_y = (target_h - new_h) // 2
-        bg.paste(img_resized, (paste_x, paste_y))
-        imgtk = ImageTk.PhotoImage(image=bg)
+        bg = cv2.cvtColor(
+            cv2.copyMakeBorder(
+                frame_resized,
+                top=(target_h - new_h) // 2,
+                bottom=(target_h - new_h + 1) // 2,
+                left=(target_w - new_w) // 2,
+                right=(target_w - new_w + 1) // 2,
+                borderType=cv2.BORDER_CONSTANT,
+                value=[0, 0, 0],
+            ),
+            cv2.COLOR_BGR2RGB,
+        )
+
+        # Convert to PIL only for final display
+        img = Image.fromarray(bg)
+        imgtk = ImageTk.PhotoImage(image=img)
 
         if self.video_img.winfo_exists():
             self.video_img.imgtk = imgtk
