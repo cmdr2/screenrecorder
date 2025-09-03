@@ -4,7 +4,7 @@ import ctypes
 from .utils import passthrough_mouse_clicks, capture_mouse_clicks
 from .config import get_region, set_region
 from .ui_buttons import UIButtonPanel
-from .videoplayer import VideoPlayerWindow
+from .preview_editor import PreviewEditorWindow
 
 
 class OverlayWindow:
@@ -83,7 +83,7 @@ class OverlayWindow:
             self.enter_waiting_mode()
             # Show video preview window after recording
             if self.recorder.temp_video_path:
-                VideoPlayerWindow(self.recorder.temp_video_path)
+                PreviewEditorWindow(self.recorder.temp_video_path)
         else:
             self.recorder.start()
             self.ui_panel.set_recording_state(True)

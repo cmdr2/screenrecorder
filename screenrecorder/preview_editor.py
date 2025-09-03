@@ -5,10 +5,10 @@ import sys
 from tkinter import filedialog, messagebox
 
 
-class VideoPlayerWindow:
+class PreviewEditorWindow:
     def __init__(self, video_path):
         self.root = tk.Toplevel()
-        self.root.title("Preview Recording")
+        self.root.title("Preview")
         self.root.geometry("640x480")
         self.root.title("Preview video")
 
@@ -173,5 +173,5 @@ class VideoPlayerWindow:
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("800x600")
-    player = VideoPlayerWindow(root)
+    player = PreviewEditorWindow(root)
     root.mainloop()
