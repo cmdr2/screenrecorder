@@ -85,6 +85,10 @@ class OpenCVVideoPlayer:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             self.frame_pos = frame_number
 
+            # If paused, display the frame immediately
+            if not was_playing:
+                self._display_current_frame()
+
             # Resume playback if it was playing before
             if was_playing:
                 self.paused = False
@@ -96,26 +100,42 @@ class OpenCVVideoPlayer:
             if self.paused:
                 time.sleep(0.05)
                 continue
-            ret, frame = self.cap.read()
-            if not ret:
-                # End of video
-                self.dispatch_event("ended")
-                break
-            self.frame_pos = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img = Image.fromarray(frame)
-            img = img.resize((self.width, self.height), Image.Resampling.LANCZOS)
-            imgtk = ImageTk.PhotoImage(image=img)
-            # Only update label if it still exists
-            if self.video_img.winfo_exists():
-                self.video_img.imgtk = imgtk
-                self.video_img.config(image=imgtk)
-            else:
-                # If label is gone, stop playback
-                self.playing = False
-                break
+            self._display_current_frame(advance=True)
             time.sleep(1 / max(self.cap.get(cv2.CAP_PROP_FPS), 25))
         self.stop()
+
+    def _display_current_frame(self, advance=False):
+        """
+        Display the current frame in the video_img label.
+        If advance=True, read the next frame; otherwise, show the current frame.
+        """
+        if not self.cap:
+            return
+        if advance:
+            ret, frame = self.cap.read()
+            if not ret:
+                self.dispatch_event("ended")
+                return
+            self.frame_pos = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+        else:
+            # Grab the frame at the current position
+            pos = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+            ret, frame = self.cap.read()
+            if not ret:
+                return
+            # If the frame position changed, seek back
+            if int(pos) != self.frame_pos:
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, self.frame_pos)
+                ret, frame = self.cap.read()
+                if not ret:
+                    return
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(frame)
+        img = img.resize((self.width, self.height), Image.Resampling.LANCZOS)
+        imgtk = ImageTk.PhotoImage(image=img)
+        if self.video_img.winfo_exists():
+            self.video_img.imgtk = imgtk
+            self.video_img.config(image=imgtk)
 
     # Event system methods
     def add_event_listener(self, event_type, callback):
