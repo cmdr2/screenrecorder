@@ -29,8 +29,25 @@ class OpenCVVideoPlayer:
         for btn in ("<Button-1>", "<Button-2>"):
             self.video_img.bind(btn, lambda e, btn=btn: e.widget.master.event_generate(btn, x=e.x, y=e.y))
 
+        # Bind resize event
+        self.frame.bind("<Configure>", self._on_resize)
+
         # Event system
         self._event_handlers = {"play": [], "pause": [], "ended": [], "seek": [], "load": []}
+
+    def _on_resize(self, event):
+        # Pause video if playing during resize to prevent crash
+        was_playing = self.playing and not self.paused
+        if was_playing:
+            self.paused = True
+            time.sleep(0.1)  # Allow play thread to pause
+        new_w, new_h = event.width, event.height
+        if new_w != self.width or new_h != self.height:
+            self.width, self.height = new_w, new_h
+            self._display_current_frame()
+        # Resume video if it was playing before resize
+        if was_playing:
+            self.paused = False
 
     def load(self, video_path):
         self.stop()
