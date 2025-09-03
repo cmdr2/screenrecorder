@@ -38,12 +38,18 @@ class OpenCVVideoPlayer:
     def play(self):
         if not self.cap and self.video_path:
             self.cap = cv2.VideoCapture(self.video_path)
-        if self.playing:
+
+        # Handle resuming from pause state
+        if self.playing and self.paused:
             self.paused = False
-            # Trigger play event even if already playing but was paused
-            if self.paused:
-                self.dispatch_event("play")
+            self.dispatch_event("play")
             return
+
+        # If already playing and not paused, nothing to do
+        if self.playing and not self.paused:
+            return
+
+        # Start a new playback
         self.playing = True
         self.paused = False
         self.thread = threading.Thread(target=self._play_loop, daemon=True)
@@ -68,8 +74,21 @@ class OpenCVVideoPlayer:
 
     def seek(self, frame_number):
         if self.cap:
+            # Temporarily pause playback to avoid thread conflicts during seeking
+            was_playing = self.playing and not self.paused
+            if was_playing:
+                self.paused = True
+                # Small delay to ensure the playback thread recognizes the pause
+                time.sleep(0.1)
+
+            # Now safe to seek
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             self.frame_pos = frame_number
+
+            # Resume playback if it was playing before
+            if was_playing:
+                self.paused = False
+
             self.dispatch_event("seek", frame_number=frame_number)
 
     def _play_loop(self):

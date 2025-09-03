@@ -47,6 +47,7 @@ class VideoPlayerControls:
         self.slider_canvas.pack(side=tk.LEFT, padx=8)
         self.slider_canvas.bind("<Button-1>", self._on_slider_click)
         self.slider_canvas.bind("<B1-Motion>", self._on_slider_drag)
+        self.slider_canvas.bind("<ButtonRelease-1>", self._on_slider_release)
         self.slider_value = 0
         self.slider_max = 100
 
@@ -62,16 +63,33 @@ class VideoPlayerControls:
         elif event_type == "pause" or event_type == "ended":
             self.is_playing = False
 
+        # Always update button to match the current state
         self._update_play_pause_button()
 
     def _start_timer(self):
         """Start a timer to update the time display and slider position"""
+        # Check if the frame still exists before scheduling the next update
+        if not self.frame.winfo_exists():
+            return  # Frame was destroyed, don't schedule any more updates
+
         self._update_display()
         self.frame.after(250, self._start_timer)
 
     def _update_display(self):
         """Update time display and slider position based on current video state"""
         try:
+            # First check if our widgets still exist before updating
+            if not self.frame.winfo_exists():
+                return
+
+            # Ensure button state matches videoplayer state
+            # This ensures UI stays in sync even if events are missed
+            if hasattr(self, "videoplayer"):
+                playing_state = self.videoplayer.playing and not self.videoplayer.paused
+                if self.is_playing != playing_state:
+                    self.is_playing = playing_state
+                    self._update_play_pause_button()
+
             if self.videoplayer.cap:
                 # Get current time from frame position and FPS
                 fps = self.videoplayer.cap.get(5) or 25
@@ -87,8 +105,10 @@ class VideoPlayerControls:
                 # Update slider position
                 if total_time > 0:
                     self.set_slider(current_time, total_time)
-        except Exception:
-            # Silently ignore errors in the timer
+        except Exception as e:
+            # Print errors to debug
+            print(f"Error updating display: {e}")
+            # Silently continue
             pass
 
     def _toggle_play_pause(self):
@@ -99,6 +119,10 @@ class VideoPlayerControls:
 
     def _update_play_pause_button(self):
         """Update the play/pause button icon based on current state"""
+        # Check if the button still exists before trying to update it
+        if not hasattr(self, "play_pause_btn") or not self.play_pause_btn.winfo_exists():
+            return
+
         if self.is_playing:
             self.play_pause_btn.config(image=self.pause_icon)
             self.play_pause_btn.image = self.pause_icon
@@ -107,7 +131,9 @@ class VideoPlayerControls:
             self.play_pause_btn.image = self.play_icon
 
     def update_time(self, current, total):
-        self.time_label.config(text=f"{self._format_time(current)} / {self._format_time(total)}")
+        # Check if label still exists before updating
+        if hasattr(self, "time_label") and self.time_label.winfo_exists():
+            self.time_label.config(text=f"{self._format_time(current)} / {self._format_time(total)}")
 
     def _format_time(self, seconds):
         m, s = divmod(int(seconds), 60)
@@ -119,6 +145,10 @@ class VideoPlayerControls:
         self._draw_slider()
 
     def _draw_slider(self):
+        # Check if slider canvas still exists
+        if not hasattr(self, "slider_canvas") or not self.slider_canvas.winfo_exists():
+            return
+
         self.slider_canvas.delete("all")
         # Draw background line
         self.slider_canvas.create_line(
@@ -143,18 +173,23 @@ class VideoPlayerControls:
         )
 
     def _on_slider_click(self, event):
-        self._seek_to(event.x)
+        self._seek_to(event.x, immediate=True)
 
     def _on_slider_drag(self, event):
-        self._seek_to(event.x)
+        # Update slider visually, but don't seek immediately during drag
+        self._seek_to(event.x, immediate=False)
 
-    def _seek_to(self, x):
+    def _on_slider_release(self, event):
+        # Perform the actual seek when the slider is released
+        self._seek_to(event.x, immediate=True)
+
+    def _seek_to(self, x, immediate=True):
         value = int((x / self.slider_length) * self.slider_max)
         value = max(0, min(self.slider_max, value))
         self.set_slider(value, self.slider_max)
 
         # Calculate frame number from time value
-        if self.videoplayer.cap:
+        if immediate and self.videoplayer.cap:
             fps = self.videoplayer.cap.get(5) or 25
             frame_number = int(value * fps)
             self.videoplayer.seek(frame_number)
