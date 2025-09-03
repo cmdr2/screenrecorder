@@ -1,4 +1,3 @@
-import tkinter as tk
 from .videoplayer import OpenCVVideoPlayer
 from .controls import VideoPlayerControls
 
