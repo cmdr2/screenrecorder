@@ -8,6 +8,7 @@ class VideoPlayerControls:
     def __init__(self, parent, videoplayer):
         # Store reference to videoplayer
         self.videoplayer = videoplayer
+        self._slider_dragging = False  # Track if slider is being dragged
 
         # Subscribe to video player events
         videoplayer.add_event_listener("play", self._on_video_event)
@@ -101,8 +102,8 @@ class VideoPlayerControls:
             # Update time display
             self.update_time(current_time, total_time)
 
-            # Update slider position
-            if total_time > 0:
+            # Update slider position only if not dragging
+            if not self._slider_dragging and total_time > 0:
                 self.set_slider(current_time, total_time)
         except Exception as e:
             # Print errors to debug
@@ -173,12 +174,14 @@ class VideoPlayerControls:
         self._seek_to(event.x, immediate=True)
 
     def _on_slider_drag(self, event):
+        self._slider_dragging = True
         # Update slider visually, but don't seek immediately during drag
         self._seek_to(event.x, immediate=False)
 
     def _on_slider_release(self, event):
         # Perform the actual seek when the slider is released
         self._seek_to(event.x, immediate=True)
+        self._slider_dragging = False
 
     def _seek_to(self, x, immediate=True):
         # Calculate value as a float for finer granularity
