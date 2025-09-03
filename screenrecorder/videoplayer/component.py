@@ -14,24 +14,19 @@ class VideoPlayerComponent:
 
         self.player = OpenCVVideoPlayer(parent, width=width, height=height)
         self.player.frame.place(x=0, y=0, relwidth=1, relheight=1)
-        self.player.set_on_video_end(self._on_video_end)
+        self.player.add_event_listener("ended", self._on_video_end)
 
         # Bind mouse events only to the overall frame
         self.player.frame.bind("<Enter>", self._show_controls)
         self.player.frame.bind("<Leave>", self._hide_controls)
 
         if self._controls_enabled:
-            self.controls = VideoPlayerControls(
-                self.player.frame,
-                play_callback=self.player.play,
-                pause_callback=self.player.pause,
-                stop_callback=self.player.stop,
-                seek_callback=self._on_seek,
-            )
+            self.controls = VideoPlayerControls(self.player.frame, videoplayer=self.player)
             # Overlay controls at bottom, initially visible
             self.controls.frame.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
             self.controls.frame.lift()
-            self.seek_slider = self.controls.seek_slider if hasattr(self.controls, "seek_slider") else None
+            self.seek_slider = self.controls.slider_canvas if hasattr(self.controls, "slider_canvas") else None
+
         if video_path:
             self.player.load(video_path)
             if autoplay:
@@ -50,8 +45,8 @@ class VideoPlayerComponent:
         if self.controls and self.controls.frame:
             self.controls.frame.place_forget()
 
-    def _on_video_end(self):
-        if self.loop:
+    def _on_video_end(self, event_type, **kwargs):
+        if self._loop:
             self.player.seek(0)
             self.player.play()
 
@@ -105,12 +100,6 @@ class VideoPlayerComponent:
     def current_frame(self, frame_number):
         try:
             self.player.seek(int(frame_number))
-        except Exception:
-            pass
-
-    def _on_seek(self, value):
-        try:
-            self.current_frame = int(value)
         except Exception:
             pass
 

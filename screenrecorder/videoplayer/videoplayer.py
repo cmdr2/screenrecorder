@@ -25,25 +25,34 @@ class OpenCVVideoPlayer:
         self.frame_pos = 0
         self.video_path = None
 
+        # Event system
+        self._event_handlers = {"play": [], "pause": [], "ended": [], "seek": [], "load": []}
+
     def load(self, video_path):
         self.stop()
         self.video_path = video_path
         self.cap = cv2.VideoCapture(self.video_path)
         self.frame_pos = 0
+        self.dispatch_event("load", path=video_path)
 
     def play(self):
         if not self.cap and self.video_path:
             self.cap = cv2.VideoCapture(self.video_path)
         if self.playing:
             self.paused = False
+            # Trigger play event even if already playing but was paused
+            if self.paused:
+                self.dispatch_event("play")
             return
         self.playing = True
         self.paused = False
         self.thread = threading.Thread(target=self._play_loop, daemon=True)
         self.thread.start()
+        self.dispatch_event("play")
 
     def pause(self):
         self.paused = True
+        self.dispatch_event("pause")
 
     def stop(self):
         self.playing = False
@@ -54,11 +63,14 @@ class OpenCVVideoPlayer:
         # Only update label if it still exists
         if self.video_img.winfo_exists():
             self.video_img.config(image="")
+        # Trigger pause event when stopping
+        self.dispatch_event("pause")
 
     def seek(self, frame_number):
         if self.cap:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             self.frame_pos = frame_number
+            self.dispatch_event("seek", frame_number=frame_number)
 
     def _play_loop(self):
         while self.playing and self.cap and self.cap.isOpened():
@@ -68,8 +80,7 @@ class OpenCVVideoPlayer:
             ret, frame = self.cap.read()
             if not ret:
                 # End of video
-                if hasattr(self, "on_video_end") and callable(self.on_video_end):
-                    self.on_video_end()
+                self.dispatch_event("ended")
                 break
             self.frame_pos = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -87,5 +98,31 @@ class OpenCVVideoPlayer:
             time.sleep(1 / max(self.cap.get(cv2.CAP_PROP_FPS), 25))
         self.stop()
 
-    def set_on_video_end(self, callback):
-        self.on_video_end = callback
+    # Event system methods
+    def add_event_listener(self, event_type, callback):
+        """Add an event listener for the specified event type
+
+        Args:
+            event_type: String representing the event ('play', 'pause', 'ended', etc)
+            callback: Function to call when the event is triggered. The callback will
+                      receive the event_type and any additional parameters as kwargs.
+        """
+        if event_type in self._event_handlers:
+            if callback not in self._event_handlers[event_type]:
+                self._event_handlers[event_type].append(callback)
+        else:
+            self._event_handlers[event_type] = [callback]
+
+    def remove_event_listener(self, event_type, callback):
+        """Remove an event listener for the specified event type"""
+        if event_type in self._event_handlers and callback in self._event_handlers[event_type]:
+            self._event_handlers[event_type].remove(callback)
+
+    def dispatch_event(self, event_type, **kwargs):
+        """Dispatch an event of the specified type with optional parameters"""
+        if event_type in self._event_handlers:
+            for callback in self._event_handlers[event_type]:
+                try:
+                    callback(event_type=event_type, **kwargs)
+                except Exception as e:
+                    print(f"Error in event listener: {e}")
