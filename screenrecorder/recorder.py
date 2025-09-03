@@ -3,6 +3,7 @@ import numpy as np
 import pyautogui
 import threading
 import time
+import tempfile
 
 
 class ScreenRecorder:
@@ -11,13 +12,19 @@ class ScreenRecorder:
         self.thread = None
         self.out = None
         self.region = None  # (x, y, w, h)
+        self.temp_video_path = None
 
     def start(self):
         if self.recording or not self.region:
             return
+
         x, y, w, h = self.region
         self.recording = True
-        self.out = cv2.VideoWriter("output.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 30.0, (w, h))
+        # Save to a temp file instead of output.mp4
+        temp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+        self.temp_video_path = temp.name
+        temp.close()
+        self.out = cv2.VideoWriter(self.temp_video_path, cv2.VideoWriter_fourcc(*"mp4v"), 30.0, (w, h))
         self.thread = threading.Thread(target=self._record_loop, daemon=True)
         self.thread.start()
 
@@ -28,7 +35,7 @@ class ScreenRecorder:
         if self.out:
             self.out.release()
             self.out = None
-        print("Saved to output.mp4")
+        print(f"Saved to {self.temp_video_path}")
 
     def _record_loop(self):
         frame_time = 1.0 / 30.0

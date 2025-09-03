@@ -5,3 +5,6 @@ pystray
 pillow
 keyboard
 tkfontawesome
+pyperclip
+python-vlc
+pywin32
