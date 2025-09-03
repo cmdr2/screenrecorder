@@ -25,6 +25,10 @@ class OpenCVVideoPlayer:
         self.frame_pos = 0
         self.video_path = None
 
+        # Make video_img label forward mouse click events to parent frame
+        for btn in ("<Button-1>", "<Button-2>"):
+            self.video_img.bind(btn, lambda e, btn=btn: e.widget.master.event_generate(btn, x=e.x, y=e.y))
+
         # Event system
         self._event_handlers = {"play": [], "pause": [], "ended": [], "seek": [], "load": []}
 

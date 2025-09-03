@@ -21,6 +21,7 @@ class VideoPlayerComponent:
         # Bind mouse events only to the overall frame
         self.player.frame.bind("<Enter>", self._show_controls)
         self.player.frame.bind("<Leave>", self._hide_controls)
+        self.player.frame.bind("<Button-1>", self._toggle_playback)
 
         if self._controls_enabled:
             self.controls = VideoPlayerControls(self.player.frame, videoplayer=self.player)
@@ -55,6 +56,9 @@ class VideoPlayerComponent:
         if self._loop:
             self.player.seek(0)
             self.player.play()
+
+    def _toggle_playback(self, event=None):
+        self.controls._toggle_play_pause()
 
     @property
     def controls_enabled(self):
