@@ -2,12 +2,14 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import filedialog, messagebox
 from .videoplayer.component import VideoPlayerComponent
-from .videoplayer.videoplayer import OpenCVVideoPlayer
 
 
 class PreviewEditorWindow:
-    def __init__(self, video_path):
-        self.root = tk.Toplevel()
+    def __init__(self, video_path, parent=None):
+        if parent is None:
+            self.root = tk.Toplevel()
+        else:
+            self.root = parent
         self.root.title("Preview video")
         self.root.geometry("640x480")
 
@@ -17,8 +19,6 @@ class PreviewEditorWindow:
         )
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
         self.filename = video_path
-
-    # No longer needed: set_filepath, set_video_panel, slider/progress logic
 
     def copy_to_clipboard(self):
         from .utils import copy_files_to_clipboard
@@ -41,21 +41,19 @@ class PreviewEditorWindow:
             except Exception as e:
                 messagebox.showerror("Save", f"Failed to save: {e}")
 
-    # set_video_panel is not needed with ffplay/ffmpeg subprocess
-
-    def play_video(self):
-        self.video_player.play()
-
-    # Pause not supported in ffplay subprocess, so omit
-
-    def stop_video(self):
-        self.video_player.stop()
-
-    # Progress/seek not supported in ffplay subprocess, so omit
-
 
 if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) > 1:
+        video_file = sys.argv[1]
+    else:
+        video_file = filedialog.askopenfilename(title="Select a video file", filetypes=[("MP4 files", "*.mp4")])
+        if not video_file:
+            print("No file selected. Exiting.")
+            sys.exit(0)
+
     root = tk.Tk()
     root.geometry("800x600")
-    player = PreviewEditorWindow(root)
+    player = PreviewEditorWindow(video_file, parent=root)
     root.mainloop()
