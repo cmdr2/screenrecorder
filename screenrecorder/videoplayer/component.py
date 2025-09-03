@@ -1,7 +1,7 @@
 from .videoplayer import OpenCVVideoPlayer
 from .controls import VideoPlayerControls
 
-CONTROLS_BAR_HEIGHT_REL = 0.1
+CONTROLS_BAR_HEIGHT_PX = 40
 
 
 class VideoPlayerComponent:
@@ -27,7 +27,10 @@ class VideoPlayerComponent:
             self.controls = VideoPlayerControls(self.player.frame, videoplayer=self.player)
             # Overlay controls at bottom, initially visible
             self.controls.frame.place(
-                relx=0, rely=1 - CONTROLS_BAR_HEIGHT_REL, relwidth=1, relheight=CONTROLS_BAR_HEIGHT_REL
+                x=0,
+                y=self.player.frame.winfo_height() - CONTROLS_BAR_HEIGHT_PX,
+                relwidth=1,
+                height=CONTROLS_BAR_HEIGHT_PX,
             )
             self.controls.frame.lift()
             self.seek_slider = self.controls.slider_canvas if hasattr(self.controls, "slider_canvas") else None
@@ -44,7 +47,10 @@ class VideoPlayerComponent:
     def _show_controls(self, event=None):
         if self.controls and self.controls.frame:
             self.controls.frame.place(
-                relx=0, rely=1 - CONTROLS_BAR_HEIGHT_REL, relwidth=1, relheight=CONTROLS_BAR_HEIGHT_REL
+                x=0,
+                y=self.player.frame.winfo_height() - CONTROLS_BAR_HEIGHT_PX,
+                relwidth=1,
+                height=CONTROLS_BAR_HEIGHT_PX,
             )
             self.controls.frame.lift()
 

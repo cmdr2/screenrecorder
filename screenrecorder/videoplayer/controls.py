@@ -52,6 +52,7 @@ class VideoPlayerControls:
         self.slider_canvas.bind("<Button-1>", self._on_slider_click)
         self.slider_canvas.bind("<B1-Motion>", self._on_slider_drag)
         self.slider_canvas.bind("<ButtonRelease-1>", self._on_slider_release)
+        self.slider_canvas.bind("<Configure>", self._on_slider_resize)
         self.slider_value = 0
         self.slider_max = 100
 
@@ -59,6 +60,10 @@ class VideoPlayerControls:
 
         # Start update timer for displaying current time
         self._start_timer()
+
+    def _on_slider_resize(self, event):
+        """Redraw slider when the canvas is resized."""
+        self._draw_slider()
 
     def _on_video_event(self, event_type, **kwargs):
         """Generic event handler for video player events"""
