@@ -1,0 +1,125 @@
+import tkinter as tk
+from .videoplayer import OpenCVVideoPlayer
+from .controls import VideoPlayerControls
+
+
+class VideoPlayerComponent:
+    def __init__(self, parent, video_path=None, width=640, height=480, controls=True, autoplay=False, loop=False):
+        self.parent = parent
+        self._controls_enabled = controls
+        self._autoplay = autoplay
+        self._loop = loop
+        self._src = video_path
+        self.controls = None
+        self.seek_slider = None
+
+        self.player = OpenCVVideoPlayer(parent, width=width, height=height)
+        self.player.frame.place(x=0, y=0, relwidth=1, relheight=1)
+        self.player.set_on_video_end(self._on_video_end)
+
+        # Bind mouse events only to the overall frame
+        self.player.frame.bind("<Enter>", self._show_controls)
+        self.player.frame.bind("<Leave>", self._hide_controls)
+
+        if self._controls_enabled:
+            self.controls = VideoPlayerControls(
+                self.player.frame,
+                play_callback=self.player.play,
+                pause_callback=self.player.pause,
+                stop_callback=self.player.stop,
+                seek_callback=self._on_seek,
+            )
+            # Overlay controls at bottom, initially visible
+            self.controls.frame.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
+            self.controls.frame.lift()
+            self.seek_slider = self.controls.seek_slider if hasattr(self.controls, "seek_slider") else None
+        if video_path:
+            self.player.load(video_path)
+            if autoplay:
+                self.player.play()
+
+    @property
+    def frame(self):
+        return self.player.frame
+
+    def _show_controls(self, event=None):
+        if self.controls and self.controls.frame:
+            self.controls.frame.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
+            self.controls.frame.lift()
+
+    def _hide_controls(self, event=None):
+        if self.controls and self.controls.frame:
+            self.controls.frame.place_forget()
+
+    def _on_video_end(self):
+        if self.loop:
+            self.player.seek(0)
+            self.player.play()
+
+    @property
+    def controls_enabled(self):
+        return self._controls_enabled
+
+    @controls_enabled.setter
+    def controls_enabled(self, value):
+        self._controls_enabled = bool(value)
+        # Could add logic to show/hide controls dynamically
+
+    @property
+    def autoplay(self):
+        return self._autoplay
+
+    @autoplay.setter
+    def autoplay(self, value):
+        self._autoplay = bool(value)
+
+    @property
+    def loop(self):
+        return self._loop
+
+    @loop.setter
+    def loop(self, value):
+        self._loop = bool(value)
+
+    @property
+    def src(self):
+        return self._src
+
+    @src.setter
+    def src(self, video_path):
+        self._src = video_path
+        self.player.load(video_path)
+
+    @property
+    def is_playing(self):
+        return self.player.playing
+
+    @property
+    def is_paused(self):
+        return self.player.paused
+
+    @property
+    def current_frame(self):
+        return self.player.frame_pos
+
+    @current_frame.setter
+    def current_frame(self, frame_number):
+        try:
+            self.player.seek(int(frame_number))
+        except Exception:
+            pass
+
+    def _on_seek(self, value):
+        try:
+            self.current_frame = int(value)
+        except Exception:
+            pass
+
+    def play(self):
+        self.player.play()
+
+    def pause(self):
+        self.player.pause()
+
+    def stop(self):
+        self.player.stop()
