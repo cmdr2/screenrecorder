@@ -1,3 +1,4 @@
+import tkinter as tk
 from .videoplayer import OpenCVVideoPlayer
 from .controls import VideoPlayerControls
 
@@ -14,16 +15,20 @@ class VideoPlayerComponent:
         self.controls = None
         self.seek_slider = None
 
-        self.player = OpenCVVideoPlayer(parent, width=width, height=height)
+        # Create a dedicated frame for the component
+        self.frame = tk.Frame(parent, width=width, height=height)
+        self.frame.place(x=0, y=0, relwidth=1, relheight=1)
+        self.player = OpenCVVideoPlayer(self.frame, width=width, height=height)
         self.player.frame.place(x=0, y=0, relwidth=1, relheight=1)
         self.player.add_event_listener("ended", self._on_video_end)
 
-        # Bind mouse events only to the overall frame
-        self.player.frame.bind("<Enter>", self._show_controls)
-        self.player.frame.bind("<Leave>", self._hide_controls)
-        self.player.frame.bind("<Button-1>", self._toggle_playback)
-        self.player.frame.bind("<Key-space>", self._toggle_playback)
-        self.player.frame.focus_set()  # Ensure frame can receive key events
+        # Bind events to the overall component frame
+        self.frame.bind("<Enter>", self._show_controls)
+        self.frame.bind("<Leave>", self._hide_controls)
+        self.frame.bind("<Button-1>", self._toggle_playback)
+        self.frame.bind("<Key-space>", self._toggle_playback)
+        self.frame.bind("<Configure>", self._show_controls)
+        self.frame.focus_set()  # Ensure frame can receive key events
 
         if self._controls_enabled:
             self.controls = VideoPlayerControls(self.player.frame, videoplayer=self.player)
@@ -41,10 +46,6 @@ class VideoPlayerComponent:
             self.player.load(video_path)
             if autoplay:
                 self.player.play()
-
-    @property
-    def frame(self):
-        return self.player.frame
 
     def _show_controls(self, event=None):
         if self.controls and self.controls.frame:

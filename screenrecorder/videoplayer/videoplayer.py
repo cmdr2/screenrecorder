@@ -25,9 +25,15 @@ class OpenCVVideoPlayer:
         self.frame_pos = 0
         self.video_path = None
 
-        # Make video_img label forward mouse click events to parent frame
-        for btn in ("<Button-1>", "<Button-2>"):
-            self.video_img.bind(btn, lambda e, btn=btn: e.widget.master.event_generate(btn, x=e.x, y=e.y))
+        def bubble_event_to_top(event, event_type):
+            # Find the topmost frame (component frame)
+            top = self.frame
+            while hasattr(top, "master") and isinstance(top.master, tk.Frame):
+                top = top.master
+            top.event_generate(event_type, x=event.x, y=event.y)
+
+        for btn in ("<Button-1>", "<Button-2>", "<Enter>", "<Leave>", "<Key-space>"):
+            self.video_img.bind(btn, lambda e, btn=btn: bubble_event_to_top(e, btn))
 
         # Bind resize event
         self.frame.bind("<Configure>", self._on_resize)
