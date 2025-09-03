@@ -81,9 +81,18 @@ class OverlayWindow:
             self.recorder.stop()
             self.ui_panel.set_recording_state(False)
             self.enter_waiting_mode()
-            # Show video preview window after recording
+
             if self.recorder.temp_video_path:
-                PreviewEditorWindow(self.recorder.temp_video_path)
+                from .utils import copy_files_to_clipboard
+
+                try:
+                    copy_files_to_clipboard(self.recorder.temp_video_path)
+                except Exception as e:
+                    print(f"Failed to copy video to clipboard: {e}")
+
+                preview = PreviewEditorWindow(self.recorder.temp_video_path)
+
+                preview.show_toast("Video copied to clipboard!")
         else:
             self.recorder.start()
             self.ui_panel.set_recording_state(True)

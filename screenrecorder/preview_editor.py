@@ -25,11 +25,30 @@ class PreviewEditorWindow:
 
         try:
             copy_files_to_clipboard(self.filename)
-            messagebox.showinfo(
-                "Clipboard", "Video file path copied to clipboard. You can now paste it as an attachment."
-            )
+            self.show_toast("Video copied to clipboard!")
         except Exception as e:
             messagebox.showerror("Clipboard", f"Failed to copy: {e}")
+
+    def show_toast(self, message):
+        # Create a small label overlay in the window
+        toast = tk.Label(
+            self.root,
+            text=message,
+            bg="#333",
+            fg="#fff",
+            font=("Segoe UI", 12, "bold"),
+            padx=16,
+            pady=8,
+            bd=2,
+            relief="ridge",
+        )
+        # Place at bottom right corner
+        self.root.update_idletasks()
+        x = self.root.winfo_width() - toast.winfo_reqwidth() - 20
+        y = self.root.winfo_height() - toast.winfo_reqheight() - 20
+        toast.place(x=x, y=y)
+        # Remove after 3 seconds
+        self.root.after(3000, toast.destroy)
 
     def save_file(self):
         save_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")])
