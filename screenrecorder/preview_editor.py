@@ -12,6 +12,11 @@ class PreviewEditorWindow:
             self.root = parent
         self.root.title("Preview video")
         self.root.geometry("640x480")
+        # Ensure window is focused and on top
+        self.root.lift()
+        self.root.focus_force()
+        self.root.attributes("-topmost", True)
+        self.root.after(500, lambda: self.root.attributes("-topmost", False))  # Remove topmost after focus
 
         # Video player component (with controls, autoplay options)
         self.video_player = VideoPlayerComponent(
