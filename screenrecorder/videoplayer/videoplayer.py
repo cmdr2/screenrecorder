@@ -19,8 +19,8 @@ class OpenCVVideoPlayer:
         self.paused = False
         self.frame = tk.Frame(parent, width=width, height=height)
         self.frame.pack_propagate(False)
-        self.label = tk.Label(self.frame, bg="black")
-        self.label.pack(fill=tk.BOTH, expand=1)
+        self.video_img = tk.Label(self.frame, bg="black")
+        self.video_img.pack(fill=tk.BOTH, expand=1)
         self.thread = None
         self.frame_pos = 0
         self.video_path = None
@@ -52,8 +52,8 @@ class OpenCVVideoPlayer:
             self.cap.release()
             self.cap = None
         # Only update label if it still exists
-        if self.label.winfo_exists():
-            self.label.config(image="")
+        if self.video_img.winfo_exists():
+            self.video_img.config(image="")
 
     def seek(self, frame_number):
         if self.cap:
@@ -77,9 +77,9 @@ class OpenCVVideoPlayer:
             img = img.resize((self.width, self.height), Image.Resampling.LANCZOS)
             imgtk = ImageTk.PhotoImage(image=img)
             # Only update label if it still exists
-            if self.label.winfo_exists():
-                self.label.imgtk = imgtk
-                self.label.config(image=imgtk)
+            if self.video_img.winfo_exists():
+                self.video_img.imgtk = imgtk
+                self.video_img.config(image=imgtk)
             else:
                 # If label is gone, stop playback
                 self.playing = False
