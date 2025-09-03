@@ -40,9 +40,14 @@ class VideoPlayerControls:
 
         # Custom Thin Slider
         self.slider_length = 220
-        self.slider_height = 8
+        self.slider_height = 8  # Visual height of the slider line
+        self.slider_clickable_height = 28  # Height of the clickable area (matches font size)
         self.slider_canvas = Canvas(
-            self.frame, width=self.slider_length, height=self.slider_height, bg=theme.COLOR_BG, highlightthickness=0
+            self.frame,
+            width=self.slider_length,
+            height=self.slider_clickable_height,
+            bg=theme.COLOR_BG,
+            highlightthickness=0,
         )
         self.slider_canvas.pack(side=tk.LEFT, padx=8)
         self.slider_canvas.bind("<Button-1>", self._on_slider_click)
@@ -150,24 +155,22 @@ class VideoPlayerControls:
             return
 
         self.slider_canvas.delete("all")
-        # Draw background line
-        self.slider_canvas.create_line(
-            0, self.slider_height // 2, self.slider_length, self.slider_height // 2, fill=theme.COLOR_TERTIARY, width=3
-        )
+        # Center the slider line vertically in the clickable area
+        center_y = self.slider_clickable_height // 2
+        # Draw background line (thin)
+        self.slider_canvas.create_line(0, center_y, self.slider_length, center_y, fill=theme.COLOR_TERTIARY, width=3)
         # Draw progress line
         if self.slider_max > 0:
             progress = int((self.slider_value / self.slider_max) * self.slider_length)
         else:
             progress = 0
-        self.slider_canvas.create_line(
-            0, self.slider_height // 2, progress, self.slider_height // 2, fill=theme.COLOR_PRIMARY, width=3
-        )
-        # Draw draggable knob
+        self.slider_canvas.create_line(0, center_y, progress, center_y, fill=theme.COLOR_PRIMARY, width=3)
+        # Draw draggable knob (thin, centered)
         self.slider_canvas.create_oval(
             progress - 5,
-            self.slider_height // 2 - 5,
+            center_y - 5,
             progress + 5,
-            self.slider_height // 2 + 5,
+            center_y + 5,
             fill=theme.COLOR_PRIMARY,
             outline=theme.COLOR_PRIMARY,
         )
@@ -184,11 +187,12 @@ class VideoPlayerControls:
         self._seek_to(event.x, immediate=True)
 
     def _seek_to(self, x, immediate=True):
-        value = int((x / self.slider_length) * self.slider_max)
+        # Calculate value as a float for finer granularity
+        value = (x / self.slider_length) * self.slider_max
         value = max(0, min(self.slider_max, value))
         self.set_slider(value, self.slider_max)
 
-        # Calculate frame number from time value
+        # Calculate frame number from time value (float)
         if immediate and self.videoplayer.cap:
             fps = self.videoplayer.cap.get(5) or 25
             frame_number = int(value * fps)
