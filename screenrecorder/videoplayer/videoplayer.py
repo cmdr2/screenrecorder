@@ -17,7 +17,7 @@ class OpenCVVideoPlayer:
         self.cap = None
         self.playing = False
         self.paused = False
-        self.frame = tk.Frame(parent, width=width, height=height)
+        self.frame = tk.Frame(parent, width=width, height=height, bg="black")
         self.frame.pack_propagate(False)
         self.video_img = tk.Label(self.frame, bg="black")
         self.video_img.pack(fill=tk.BOTH, expand=1)
@@ -150,8 +150,22 @@ class OpenCVVideoPlayer:
                     return
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(frame)
-        img = img.resize((self.width, self.height), Image.Resampling.LANCZOS)
-        imgtk = ImageTk.PhotoImage(image=img)
+
+        # Calculate aspect ratio preserving size
+        orig_w, orig_h = img.size
+        target_w, target_h = self.width, self.height
+        scale = min(target_w / orig_w, target_h / orig_h)
+        new_w = int(orig_w * scale)
+        new_h = int(orig_h * scale)
+        img_resized = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+        # Create black background and paste resized image centered
+        bg = Image.new("RGB", (target_w, target_h), (0, 0, 0))
+        paste_x = (target_w - new_w) // 2
+        paste_y = (target_h - new_h) // 2
+        bg.paste(img_resized, (paste_x, paste_y))
+        imgtk = ImageTk.PhotoImage(image=bg)
+
         if self.video_img.winfo_exists():
             self.video_img.imgtk = imgtk
             self.video_img.config(image=imgtk)
