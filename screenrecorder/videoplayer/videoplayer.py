@@ -127,6 +127,8 @@ class OpenCVVideoPlayer:
         if advance:
             ret, frame = self.cap.read()
             if not ret:
+                self.playing = False
+                self.paused = False
                 self.dispatch_event("ended")
                 return
             self.frame_pos = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
