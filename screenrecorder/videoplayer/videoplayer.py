@@ -73,8 +73,7 @@ class OpenCVVideoPlayer:
         # Start a new playback
         self.playing = True
         self.paused = False
-        self.thread = threading.Thread(target=self._play_loop, daemon=True)
-        self.thread.start()
+        self._play_loop_tk()
         self.dispatch_event("play")
 
     def pause(self):
@@ -129,14 +128,18 @@ class OpenCVVideoPlayer:
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         return frame_count / fps if fps > 0 else 0.0
 
-    def _play_loop(self):
-        while self.playing and self.cap and self.cap.isOpened():
-            if self.paused:
-                time.sleep(0.05)
-                continue
-            self._display_current_frame(advance=True)
-            time.sleep(1 / max(self.cap.get(cv2.CAP_PROP_FPS), 25))
-        self.stop()
+    def _play_loop_tk(self):
+        if not self.playing or not self.cap or not self.cap.isOpened():
+            self.stop()
+            return
+        if self.paused:
+            self.parent.after(50, self._play_loop_tk)
+            return
+        self._display_current_frame(advance=True)
+        # Schedule next frame update
+        fps = self.cap.get(cv2.CAP_PROP_FPS)
+        delay = int(1000 / max(fps, 25))
+        self.parent.after(delay, self._play_loop_tk)
 
     def _display_current_frame(self, advance=False):
         """
