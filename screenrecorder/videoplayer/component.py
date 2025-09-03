@@ -23,8 +23,8 @@ class VideoPlayerComponent:
         self.player.add_event_listener("ended", self._on_video_end)
 
         # Bind events to the overall component frame
-        self.frame.bind("<Enter>", self._show_controls)
-        self.frame.bind("<Leave>", self._hide_controls)
+        self.player.frame.bind("<Enter>", self._show_controls)
+        self.player.frame.bind("<Leave>", self._hide_controls)
         self.frame.bind("<Button-1>", self._toggle_playback)
         self.frame.bind("<Key-space>", self._toggle_playback)
         self.frame.bind("<Configure>", self._show_controls)
