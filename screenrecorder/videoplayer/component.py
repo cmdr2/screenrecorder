@@ -57,8 +57,14 @@ class VideoPlayerComponent:
             self.controls.frame.lift()
 
     def _hide_controls(self, event=None):
+        # Only hide controls if video is playing
         if self.controls and self.controls.frame:
-            self.controls.frame.place_forget()
+            if hasattr(self.player, "playing") and hasattr(self.player, "paused"):
+                if self.player.playing and not self.player.paused:
+                    self.controls.frame.place_forget()
+            else:
+                # Fallback: always show controls if state can't be determined
+                pass
 
     def _on_video_end(self, event_type, **kwargs):
         if self._loop:
@@ -66,7 +72,11 @@ class VideoPlayerComponent:
             self.player.play()
 
     def _toggle_playback(self, event=None):
+        was_playing = self.player.playing and not self.player.paused
         self.controls._toggle_play_pause()
+        # If video was playing and is now paused, show controls
+        if was_playing and self.player.paused:
+            self._show_controls()
 
     @property
     def controls_enabled(self):
