@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from .videoplayer.component import VideoPlayerComponent
+from tkinter_videoplayer import VideoPlayer
 from . import theme
 
 
@@ -19,7 +19,7 @@ class PreviewEditorWindow:
         self.root.after(500, lambda: self.root.attributes("-topmost", False))  # Remove topmost after focus
 
         # Video player component (with controls, autoplay options)
-        self.video_player = VideoPlayerComponent(
+        self.video_player = VideoPlayer(
             self.root, video_path=video_path, width=640, height=480, controls=True, autoplay=True
         )
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)

@@ -5,3 +5,4 @@ tkfontawesome
 pywin32
 opencv-python
 pillow
+tkinter-videoplayer
