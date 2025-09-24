@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter_videoplayer import VideoPlayer
+
 from . import theme
+from .toolbar import PreviewToolbar
 
 
 class PreviewEditorWindow:
@@ -12,6 +14,7 @@ class PreviewEditorWindow:
             self.root = parent
         self.root.title("Preview video")
         self.root.geometry("640x480")
+        self.root.configure(bg=theme.COLOR_BG)
         # Ensure window is focused and on top
         self.root.lift()
         self.root.focus_force()
@@ -22,6 +25,11 @@ class PreviewEditorWindow:
         self.video_player = VideoPlayer(
             self.root, video_path=video_path, width=640, height=480, controls=True, autoplay=True
         )
+
+        # Create toolbar above the video player
+        self.toolbar = PreviewToolbar(self.root, self.video_player, video_path, self)
+
+        # Pack video player after toolbar
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
         self.filename = video_path
 
