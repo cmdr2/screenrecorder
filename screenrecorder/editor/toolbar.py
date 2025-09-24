@@ -3,11 +3,11 @@ import os
 import subprocess
 import tempfile
 
-from . import theme
-from .utils import get_ffmpeg_path
+from .. import theme
+from ..utils import get_ffmpeg_path
 
 
-class PreviewToolbar:
+class Toolbar:
     def __init__(self, parent, video_player, video_path, preview_window=None):
         self.parent = parent
         self.video_player = video_player

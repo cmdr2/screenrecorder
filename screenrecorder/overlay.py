@@ -4,7 +4,7 @@ import ctypes
 from .utils import passthrough_mouse_clicks, capture_mouse_clicks
 from .config import get_region, set_region
 from .ui_buttons import UIButtonPanel
-from .preview_editor import PreviewEditorWindow
+from .editor import EditorWindow as PreviewEditorWindow
 
 
 class OverlayWindow:

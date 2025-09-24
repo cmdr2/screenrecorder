@@ -2,11 +2,11 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter_videoplayer import VideoPlayer
 
-from . import theme
-from .toolbar import PreviewToolbar
+from .. import theme
+from .toolbar import Toolbar
 
 
-class PreviewEditorWindow:
+class EditorWindow:
     def __init__(self, video_path, parent=None):
         if parent is None:
             self.root = tk.Toplevel()
@@ -27,14 +27,14 @@ class PreviewEditorWindow:
         )
 
         # Create toolbar above the video player
-        self.toolbar = PreviewToolbar(self.root, self.video_player, video_path, self)
+        self.toolbar = Toolbar(self.root, self.video_player, video_path, self)
 
         # Pack video player after toolbar
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
         self.filename = video_path
 
     def copy_to_clipboard(self):
-        from .utils import copy_files_to_clipboard
+        from ..utils import copy_files_to_clipboard
 
         try:
             copy_files_to_clipboard(self.filename)
@@ -75,20 +75,3 @@ class PreviewEditorWindow:
                 messagebox.showinfo("Save", f"Saved to {save_path}")
             except Exception as e:
                 messagebox.showerror("Save", f"Failed to save: {e}")
-
-
-if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) > 1:
-        video_file = sys.argv[1]
-    else:
-        video_file = filedialog.askopenfilename(title="Select a video file", filetypes=[("MP4 files", "*.mp4")])
-        if not video_file:
-            print("No file selected. Exiting.")
-            sys.exit(0)
-
-    root = tk.Tk()
-    root.geometry("800x600")
-    player = PreviewEditorWindow(video_file, parent=root)
-    root.mainloop()
