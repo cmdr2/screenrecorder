@@ -91,7 +91,8 @@ class Toolbar:
         self.resize_tool.update_button_state(self.resize_button)
 
     def add_to_history(self, video_path):
-        """Add a new video to the history."""
+        """Add a new video to the history (deprecated - use EditHistory instead)."""
+        # This method is kept for backward compatibility
         # Remove any history after current index (if user undid and then made new changes)
         self.video_history = self.video_history[: self.current_video_index + 1]
 

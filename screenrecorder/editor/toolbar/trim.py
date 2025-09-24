@@ -9,6 +9,7 @@ import tempfile
 
 from ... import theme
 from ...utils import get_ffmpeg_path
+from ..history import EditHistory
 
 
 class Trim:
@@ -16,6 +17,7 @@ class Trim:
         self.toolbar = toolbar
         self.video_player = toolbar.video_player
         self.preview_window = toolbar.preview_window
+        self.history = EditHistory(toolbar)
 
         # Initialize trim panel
         self.trim_panel = None
@@ -141,24 +143,12 @@ class Trim:
         )
         self.apply_button.pack(side=tk.LEFT, padx=(0, 8))
 
-        # Undo button
-        self.undo_button = tk.Button(
-            buttons_frame,
-            text="Undo",
-            command=self.undo_trim,
-            bg=theme.COLOR_TERTIARY,
-            fg=theme.COLOR_FG,
-            font=("Segoe UI", 10, "bold"),
-            relief=theme.BTN_RELIEF,
-            bd=0,
-            padx=12,
-            pady=4,
-            cursor="hand2",
-        )
+        # Undo button using history module
+        self.undo_button = self.history.create_undo_button(buttons_frame, command_callback=self._after_undo)
         self.undo_button.pack(side=tk.LEFT)
 
         # Update undo button state
-        self.update_undo_button_state()
+        self.history.update_undo_button_state(self.undo_button)
 
         return self.trim_panel
 
@@ -187,7 +177,7 @@ class Trim:
             os.close(temp_fd)
 
             # Build ffmpeg command
-            current_video = self.toolbar.video_history[self.toolbar.current_video_index]
+            current_video = self.history.get_current_video_path()
             ffmpeg_path = get_ffmpeg_path()
 
             duration = end_time - start_time
@@ -211,7 +201,7 @@ class Trim:
 
             if process.returncode == 0:
                 # Success - update video player and history
-                self.toolbar.add_to_history(temp_path)
+                self.history.add_to_history(temp_path)
                 print(temp_path)
                 self.video_player.src = temp_path
                 self.toolbar.show_success("Video trimmed successfully!")
@@ -222,7 +212,7 @@ class Trim:
                 self.end_time_var.set(self._get_video_duration_str())
 
                 # Update undo button state
-                self.update_undo_button_state()
+                self.history.update_undo_button_state(self.undo_button)
             else:
                 self.toolbar.show_error(f"Trimming failed: {process.stderr}")
                 # Clean up temp file on failure
@@ -236,24 +226,15 @@ class Trim:
         except Exception as e:
             self.toolbar.show_error(f"An error occurred: {str(e)}")
 
-    def undo_trim(self):
-        """Undo the last trim operation."""
-        if self.toolbar.current_video_index > 0:
-            self.toolbar.current_video_index -= 1
-            previous_video = self.toolbar.video_history[self.toolbar.current_video_index]
-            self.video_player.src = previous_video
-            # Update end time to previous video's duration
+    def _after_undo(self):
+        """Callback after undo operation - update UI state."""
+        # Update end time to previous video's duration
+        if self.end_time_var:
             self.end_time_var.set(self._get_video_duration_str())
-            self.toolbar.show_success("Undo successful!")
-            self.update_undo_button_state()
 
-    def update_undo_button_state(self):
-        """Enable/disable undo button based on history."""
-        if hasattr(self, "undo_button") and self.undo_button:
-            if self.toolbar.current_video_index > 0:
-                self.undo_button.config(state=tk.NORMAL, bg=theme.COLOR_TERTIARY)
-            else:
-                self.undo_button.config(state=tk.DISABLED, bg="#555")
+        # Update undo button state
+        if self.undo_button:
+            self.history.update_undo_button_state(self.undo_button)
 
     def _get_video_duration_str(self):
         """Get the duration of the current video as a string."""
