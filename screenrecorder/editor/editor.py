@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
 from tkinter_videoplayer import VideoPlayer
 
 from .. import theme
@@ -33,15 +32,6 @@ class EditorWindow:
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
         self.filename = video_path
 
-    def copy_to_clipboard(self):
-        from ..utils import copy_files_to_clipboard
-
-        try:
-            copy_files_to_clipboard(self.filename)
-            self.show_toast("Video copied to clipboard!")
-        except Exception as e:
-            messagebox.showerror("Clipboard", f"Failed to copy: {e}")
-
     def show_toast(self, message):
         # Create a small label overlay in the window
         toast = tk.Label(
@@ -65,13 +55,3 @@ class EditorWindow:
         toast.place(x=x, y=y)
         # Remove after 3 seconds
         self.root.after(3000, toast.destroy)
-
-    def save_file(self):
-        save_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")])
-        if save_path:
-            try:
-                with open(self.filename, "rb") as src, open(save_path, "wb") as dst:
-                    dst.write(src.read())
-                messagebox.showinfo("Save", f"Saved to {save_path}")
-            except Exception as e:
-                messagebox.showerror("Save", f"Failed to save: {e}")
