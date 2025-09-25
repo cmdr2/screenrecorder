@@ -1,16 +1,33 @@
-import platform
+"""
+Utility functions for screen recorder application.
 
+This module provides platform-specific utilities for:
+- Window transparency and click-through behavior
+- File operations (copying to clipboard)
+- FFmpeg executable location
+"""
+
+import platform
+import sys
+import os
+
+# Constants
 UNSUPPORTED_PLATFORM_ERROR = (
-    "Easy Screen Recorder is currently only supported on Windows. Please visit https://github.com/cmdr2/screenrecorder"
+    "Easy Screen Recorder is currently only supported on Windows. "
+    "Please visit https://github.com/cmdr2/screenrecorder"
 )
 
-os_name = platform.system()
-if os_name == "Windows":
-    import ctypes
+# Windows-specific constants
+GWL_EXSTYLE = -20
+WS_EX_LAYERED = 0x80000
+WS_EX_TRANSPARENT = 0x20
 
-    GWL_EXSTYLE = -20
-    WS_EX_LAYERED = 0x80000
-    WS_EX_TRANSPARENT = 0x20
+# Platform detection
+OS_NAME = platform.system()
+
+# Import Windows-specific modules only on Windows
+if OS_NAME == "Windows":
+    import ctypes
 
     user32 = ctypes.windll.user32
     GetWindowLong = user32.GetWindowLongW
@@ -20,7 +37,8 @@ else:
 
 
 def passthrough_mouse_clicks(hwnd):
-    if os_name != "Windows":
+    """Enable click-through behavior for a window handle."""
+    if OS_NAME != "Windows":
         raise RuntimeError(UNSUPPORTED_PLATFORM_ERROR)
 
     style = GetWindowLong(hwnd, GWL_EXSTYLE)
@@ -28,16 +46,18 @@ def passthrough_mouse_clicks(hwnd):
 
 
 def capture_mouse_clicks(hwnd):
-    if os_name != "Windows":
+    """Disable click-through behavior for a window handle."""
+    if OS_NAME != "Windows":
         raise RuntimeError(UNSUPPORTED_PLATFORM_ERROR)
 
-    style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
+    style = GetWindowLong(hwnd, GWL_EXSTYLE)
     style &= ~WS_EX_TRANSPARENT  # Remove WS_EX_TRANSPARENT
-    ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
+    SetWindowLong(hwnd, GWL_EXSTYLE, style)
 
 
 def copy_files_to_clipboard(file_paths):
-    if os_name != "Windows":
+    """Copy file paths to system clipboard (Windows only)."""
+    if OS_NAME != "Windows":
         raise RuntimeError(UNSUPPORTED_PLATFORM_ERROR)
 
     if isinstance(file_paths, str):
@@ -47,6 +67,12 @@ def copy_files_to_clipboard(file_paths):
 
 
 def _copy_files_to_clipboard_windows(file_paths):
+    """
+    Copy file paths to Windows clipboard using WIN32 API.
+
+    Args:
+        file_paths: List of file paths to copy to clipboard
+    """
     import struct
     import ctypes
     import win32clipboard as wc
@@ -96,18 +122,30 @@ def _copy_files_to_clipboard_windows(file_paths):
 
 
 def get_ffmpeg_path():
-    import sys
-    import os
+    """
+    Locate FFmpeg executable in common installation locations.
 
+    Returns:
+        str: Path to FFmpeg executable
+
+    Raises:
+        FileNotFoundError: If FFmpeg executable is not found
+    """
     exe_dir = os.path.dirname(sys.executable)
     module_dir = os.path.dirname(os.path.dirname(__file__))
+
     ffmpeg_candidates = [
-        os.path.join(exe_dir, "bin", "ffmpeg"),
         os.path.join(exe_dir, "bin", "ffmpeg.exe"),
-        os.path.join(module_dir, "bin", "ffmpeg"),
+        os.path.join(exe_dir, "bin", "ffmpeg"),
         os.path.join(module_dir, "bin", "ffmpeg.exe"),
+        os.path.join(module_dir, "bin", "ffmpeg"),
     ]
+
     for candidate in ffmpeg_candidates:
         if os.path.exists(candidate):
             return candidate
-    raise FileNotFoundError("ffmpeg not found in the bin folder next to screenrecorder or module.")
+
+    raise FileNotFoundError(
+        "FFmpeg executable not found. Please ensure ffmpeg.exe is in the 'bin' "
+        "folder next to the application or module directory."
+    )

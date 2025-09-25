@@ -1,9 +1,15 @@
+"""
+UI button panel for overlay controls.
+
+This module provides the floating button panel that appears during
+recording mode, containing record/stop, region selection, and close buttons.
+"""
+
 import tkinter as tk
-
-
 from tkfontawesome import icon_to_image
 from ..config import get_panel_position, set_panel_position
 from .. import theme
+from ..ui_factory import ButtonFactory, FrameFactory
 
 RECORD_LABEL = "Record"
 STOP_LABEL = "Stop"
@@ -12,7 +18,25 @@ CLOSE_LABEL = "Close"
 
 
 class UIButtonPanel:
+    """Floating button panel for overlay recording controls."""
+
     def __init__(self, parent, on_record, on_select, on_close):
+        """
+        Initialize the UI button panel.
+
+        Args:
+            parent: Parent tkinter window
+            on_record: Callback for record/stop button
+            on_select: Callback for region selection button
+            on_close: Callback for close button
+        """
+        self._setup_window(parent)
+        self._create_buttons(on_record, on_select, on_close)
+        self._setup_drag_behavior()
+        self.position = get_panel_position()
+
+    def _setup_window(self, parent):
+        """Configure the toplevel window for the button panel."""
         self.button_win = tk.Toplevel(parent)
         self.button_win.overrideredirect(True)
         self.button_win.attributes("-topmost", True)
@@ -27,107 +51,38 @@ class UIButtonPanel:
             pady=theme.OVERLAY_PANEL_PADY,
         )
 
-        # Drag icon (FontAwesome)
-        drag_img = icon_to_image("grip-vertical", fill=theme.DRAG_ICON_COLOR, scale_to_width=theme.DRAG_ICON_SIZE / 2)
-        self.drag_icon = tk.Label(
-            self.button_win,
-            image=drag_img,
-            bg=theme.DRAG_ICON_BG,
-            width=32,
-            height=32,
-            bd=0,
-            highlightbackground=theme.OVERLAY_PANEL_BORDER_COLOR,
-            highlightthickness=0,
-        )
-        self.drag_icon.image = drag_img
+    def _create_buttons(self, on_record, on_select, on_close):
+        """Create all buttons using the button factory."""
+        # Drag handle
+        self.drag_icon = ButtonFactory.create_drag_handle(self.button_win)
         self.drag_icon.pack(side="left", padx=theme.DRAG_ICON_PADX, pady=theme.DRAG_ICON_PADY)
 
-        # Record button with icon
-        rec_icon = icon_to_image("circle", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
-        self.record_btn = tk.Button(
-            self.button_win,
-            text=RECORD_LABEL,
-            image=rec_icon,
-            compound="left",
-            command=on_record,
-            font=theme.BTN_FONT,
-            bg=theme.BTN_BG,
-            fg=theme.BTN_FG,
-            activebackground=theme.BTN_ACTIVE_BG,
-            activeforeground=theme.BTN_ACTIVE_FG,
-            bd=theme.BTN_BORDER_WIDTH,
-            relief=theme.BTN_RELIEF,
-            highlightbackground=theme.BTN_BORDER_COLOR,
-            highlightcolor=theme.BTN_BORDER_COLOR,
-            highlightthickness=theme.BTN_BORDER_WIDTH,
-            padx=theme.BTN_PADX,
-            pady=theme.BTN_PADY,
+        # Record button
+        self.record_btn = ButtonFactory.create_icon_button(
+            self.button_win, RECORD_LABEL, "circle", on_record, icon_color=theme.RECORD_ICON_COLOR
         )
-        self.record_btn.image = rec_icon
         self.record_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
-        # Region select button with icon
-        region_icon = icon_to_image("object-group", fill=theme.REGION_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
-        self.select_btn = tk.Button(
-            self.button_win,
-            text=SELECT_LABEL,
-            image=region_icon,
-            compound="left",
-            command=on_select,
-            font=theme.BTN_FONT,
-            bg=theme.BTN_BG,
-            fg=theme.BTN_FG,
-            activebackground=theme.BTN_ACTIVE_BG,
-            activeforeground=theme.BTN_ACTIVE_FG,
-            bd=theme.BTN_BORDER_WIDTH,
-            relief=theme.BTN_RELIEF,
-            highlightbackground=theme.BTN_BORDER_COLOR,
-            highlightcolor=theme.BTN_BORDER_COLOR,
-            highlightthickness=theme.BTN_BORDER_WIDTH,
-            padx=theme.BTN_PADX,
-            pady=theme.BTN_PADY,
+        # Region select button
+        self.select_btn = ButtonFactory.create_icon_button(
+            self.button_win, SELECT_LABEL, "object-group", on_select, icon_color=theme.REGION_ICON_COLOR
         )
-        self.select_btn.image = region_icon
         self.select_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
-        # Close button with icon
-        close_icon = icon_to_image("times", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
-        self.close_btn = tk.Button(
-            self.button_win,
-            text=CLOSE_LABEL,
-            image=close_icon,
-            compound="left",
-            command=on_close,
-            font=theme.BTN_FONT,
-            bg=theme.BTN_BG,
-            fg=theme.BTN_FG,
-            activebackground=theme.BTN_ACTIVE_BG,
-            activeforeground=theme.BTN_ACTIVE_FG,
-            bd=theme.BTN_BORDER_WIDTH,
-            relief=theme.BTN_RELIEF,
-            highlightbackground=theme.BTN_BORDER_COLOR,
-            highlightcolor=theme.BTN_BORDER_COLOR,
-            highlightthickness=theme.BTN_BORDER_WIDTH,
-            padx=theme.BTN_PADX,
-            pady=theme.BTN_PADY,
+        # Close button
+        self.close_btn = ButtonFactory.create_icon_button(
+            self.button_win, CLOSE_LABEL, "times", on_close, icon_color=theme.RECORD_ICON_COLOR
         )
-        self.close_btn.image = close_icon
         self.close_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
-        # Rounded corners for panel and buttons (simulate with padding and colors)
-        self.button_win.update_idletasks()
-
-        self.position = get_panel_position()
-
+    def _setup_drag_behavior(self):
+        """Setup drag and drop behavior for the panel."""
         self._drag_data = {"x": 0, "y": 0}
-        # Bind drag events only to the drag icon
+
+        # Bind drag events to the drag icon
         self.drag_icon.bind("<ButtonPress-1>", self._on_drag_start)
         self.drag_icon.bind("<B1-Motion>", self._on_drag_motion)
         self.drag_icon.bind("<ButtonRelease-1>", self._on_drag_end)
-        self.drag_icon.bind("<Enter>", lambda e: self.drag_icon.config(cursor="fleur"))
-        self.drag_icon.bind("<Leave>", lambda e: self.drag_icon.config(cursor=""))
-
-        self.position = get_panel_position()
 
     def show(self):
         self.button_win.update_idletasks()

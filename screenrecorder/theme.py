@@ -1,19 +1,28 @@
-# theme.py
-# Centralized styling constants for the screenrecorder app
+"""
+Centralized theme and styling constants for the screenrecorder application.
 
-# Common Colors
-COLOR_BG = "#23272f"  # Main background
-COLOR_FG = "#fff"  # Main foreground/text
-COLOR_BORDER = "#3a3f4b"  # Border color
-COLOR_PRIMARY = "#3498db"  # Primary accent (blue)
-COLOR_SECONDARY = "#e74c3c"  # Secondary accent (red)
-COLOR_TERTIARY = "#888"  # Tertiary accent (gray)
+This module defines all visual styling including colors, fonts, spacing,
+and component-specific styling to ensure consistent appearance across
+all UI elements.
+"""
 
-FONT_NAME = "Segoe UI"
-FONT_SIZE = 10
-FONT_NORMAL = (FONT_NAME, FONT_SIZE, "normal")
-FONT_BOLD = (FONT_NAME, FONT_SIZE, "bold")
-FONT_ITALIC = (FONT_NAME, FONT_SIZE, "italic")
+# Base Color Palette
+COLOR_BG = "#23272f"  # Main background - dark blue-gray
+COLOR_FG = "#ffffff"  # Main foreground/text - white
+COLOR_BORDER = "#3a3f4b"  # Border color - medium gray
+COLOR_PRIMARY = "#3498db"  # Primary accent - blue
+COLOR_SECONDARY = "#e74c3c"  # Secondary accent - red
+COLOR_TERTIARY = "#888888"  # Tertiary accent - gray
+
+# Typography
+FONT_FAMILY = "Segoe UI"
+FONT_SIZE_NORMAL = 10
+FONT_SIZE_BUTTON = 12
+
+# Font tuples for tkinter
+FONT_NORMAL = (FONT_FAMILY, FONT_SIZE_NORMAL, "normal")
+FONT_BOLD = (FONT_FAMILY, FONT_SIZE_NORMAL, "bold")
+FONT_ITALIC = (FONT_FAMILY, FONT_SIZE_NORMAL, "italic")
 
 # Overlay Panel
 OVERLAY_PANEL_BG = COLOR_BG
@@ -29,25 +38,25 @@ DRAG_ICON_BG = COLOR_BG
 DRAG_ICON_PADX = (8, 0)
 DRAG_ICON_PADY = 6
 
-# Button
-BTN_BG = "#2c313c"  # Slightly different for button background
-BTN_FG = COLOR_FG
-BTN_ACTIVE_BG = "#404d66"  # More prominent active state
-BTN_ACTIVE_FG = COLOR_FG
-BTN_HOVER_BG = "#374151"  # Subtle hover state
+# Button Styling
+BTN_BG = "#2c313c"  # Button background - darker than main bg
+BTN_FG = COLOR_FG  # Button text color
+BTN_ACTIVE_BG = "#404d66"  # Active button background
+BTN_ACTIVE_FG = COLOR_FG  # Active button text
+BTN_HOVER_BG = "#374151"  # Hover button background
 BTN_BORDER_COLOR = COLOR_BORDER
 BTN_BORDER_WIDTH = 0
 BTN_PADX = 12
 BTN_PADY = 6
-BTN_FONT = ("Segoe UI", 12, "normal")  # Slightly smaller, cleaner font
+BTN_FONT = (FONT_FAMILY, FONT_SIZE_BUTTON, "normal")
 BTN_RELIEF = "flat"
-
-# Icon Colors
-RECORD_ICON_COLOR = COLOR_SECONDARY
-STOP_ICON_COLOR = COLOR_SECONDARY
-REGION_ICON_COLOR = COLOR_PRIMARY
-ICON_SIZE = 18
 BTN_PACK_PADX = 8
+
+# Icon Styling
+RECORD_ICON_COLOR = COLOR_SECONDARY  # Red for recording
+STOP_ICON_COLOR = COLOR_SECONDARY  # Red for stop
+REGION_ICON_COLOR = COLOR_PRIMARY  # Blue for region selection
+ICON_SIZE = 18
 
 # Toast styling
 TOAST_BG = COLOR_BG
