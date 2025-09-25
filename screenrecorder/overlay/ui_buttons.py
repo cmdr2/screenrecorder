@@ -88,11 +88,6 @@ class UIButtonPanel:
         # Rounded corners for panel and buttons (simulate with padding and colors)
         self.button_win.update_idletasks()
 
-        self._drag_data = {"x": 0, "y": 0}
-        self.drag_icon.bind("<ButtonPress-1>", self._on_drag_start)
-        self.drag_icon.bind("<B1-Motion>", self._on_drag_motion)
-        self.drag_icon.bind("<ButtonRelease-1>", self._on_drag_end)
-
         self.position = get_panel_position()
 
         self._drag_data = {"x": 0, "y": 0}
@@ -100,6 +95,8 @@ class UIButtonPanel:
         self.drag_icon.bind("<ButtonPress-1>", self._on_drag_start)
         self.drag_icon.bind("<B1-Motion>", self._on_drag_motion)
         self.drag_icon.bind("<ButtonRelease-1>", self._on_drag_end)
+        self.drag_icon.bind("<Enter>", lambda e: self.drag_icon.config(cursor="fleur"))
+        self.drag_icon.bind("<Leave>", lambda e: self.drag_icon.config(cursor=""))
 
         self.position = get_panel_position()
 
