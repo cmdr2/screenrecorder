@@ -68,22 +68,6 @@ class ToolPopup:
         btns_inner = tk.Frame(buttons_frame, bg=theme.COLOR_BG)
         btns_inner.grid(row=0, column=0)
 
-        # Cancel button
-        self.cancel_button = tk.Button(
-            btns_inner,
-            text="Cancel",
-            command=self.cancel,
-            bg=theme.COLOR_TERTIARY,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-            relief=theme.BTN_RELIEF,
-            bd=0,
-            padx=20,
-            pady=8,
-            cursor="hand2",
-        )
-        self.cancel_button.pack(side=tk.LEFT, padx=(0, 10))
-
         # Action button
         self.action_button = tk.Button(
             btns_inner,
@@ -98,7 +82,23 @@ class ToolPopup:
             pady=8,
             cursor="hand2",
         )
-        self.action_button.pack(side=tk.LEFT)
+        self.action_button.pack(side=tk.LEFT, padx=(0, 10))
+
+        # Cancel button
+        self.cancel_button = tk.Button(
+            btns_inner,
+            text="Cancel",
+            command=self.cancel,
+            bg=theme.COLOR_TERTIARY,
+            fg=theme.COLOR_FG,
+            font=theme.FONT_BOLD,
+            relief=theme.BTN_RELIEF,
+            bd=0,
+            padx=20,
+            pady=8,
+            cursor="hand2",
+        )
+        self.cancel_button.pack(side=tk.LEFT)
 
         # Center the window on parent
         self._center_on_parent()
