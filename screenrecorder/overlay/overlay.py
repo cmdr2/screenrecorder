@@ -26,7 +26,12 @@ class OverlayWindow:
         self.canvas = tk.Canvas(self.root, width=sw, height=sh, bg="grey", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        self.ui_panel = UIButtonPanel(self.root, on_record=self.toggle_recording, on_select=self.enter_selection_mode)
+        self.ui_panel = UIButtonPanel(
+            self.root,
+            on_record=self.toggle_recording,
+            on_select=self.enter_selection_mode,
+            on_close=self.enter_waiting_mode,
+        )
 
         # Initialize the recording region component
         self.recording_region = RecordingRegion(

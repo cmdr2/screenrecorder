@@ -5,9 +5,14 @@ from tkfontawesome import icon_to_image
 from ..config import get_panel_position, set_panel_position
 from .. import theme
 
+RECORD_LABEL = "Record"
+STOP_LABEL = "Stop"
+SELECT_LABEL = "Select region to capture"
+CLOSE_LABEL = "Close"
+
 
 class UIButtonPanel:
-    def __init__(self, parent, on_record, on_select):
+    def __init__(self, parent, on_record, on_select, on_close):
         self.button_win = tk.Toplevel(parent)
         self.button_win.overrideredirect(True)
         self.button_win.attributes("-topmost", True)
@@ -41,7 +46,7 @@ class UIButtonPanel:
         rec_icon = icon_to_image("circle", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
         self.record_btn = tk.Button(
             self.button_win,
-            text=" Record",
+            text=RECORD_LABEL,
             image=rec_icon,
             compound="left",
             command=on_record,
@@ -65,7 +70,7 @@ class UIButtonPanel:
         region_icon = icon_to_image("object-group", fill=theme.REGION_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
         self.select_btn = tk.Button(
             self.button_win,
-            text="Select region to capture",
+            text=SELECT_LABEL,
             image=region_icon,
             compound="left",
             command=on_select,
@@ -84,6 +89,30 @@ class UIButtonPanel:
         )
         self.select_btn.image = region_icon
         self.select_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
+
+        # Close button with icon
+        close_icon = icon_to_image("times", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
+        self.close_btn = tk.Button(
+            self.button_win,
+            text=CLOSE_LABEL,
+            image=close_icon,
+            compound="left",
+            command=on_close,
+            font=theme.BTN_FONT,
+            bg=theme.BTN_BG,
+            fg=theme.BTN_FG,
+            activebackground=theme.BTN_ACTIVE_BG,
+            activeforeground=theme.BTN_ACTIVE_FG,
+            bd=theme.BTN_BORDER_WIDTH,
+            relief=theme.BTN_RELIEF,
+            highlightbackground=theme.BTN_BORDER_COLOR,
+            highlightcolor=theme.BTN_BORDER_COLOR,
+            highlightthickness=theme.BTN_BORDER_WIDTH,
+            padx=theme.BTN_PADX,
+            pady=theme.BTN_PADY,
+        )
+        self.close_btn.image = close_icon
+        self.close_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
         # Rounded corners for panel and buttons (simulate with padding and colors)
         self.button_win.update_idletasks()
@@ -142,7 +171,7 @@ class UIButtonPanel:
         if recording:
             stop_icon = icon_to_image("stop", fill=theme.STOP_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
             self.record_btn.config(
-                text=" Stop",
+                text=STOP_LABEL,
                 image=stop_icon,
                 bg="#27ae60",
                 fg=theme.BTN_FG,
@@ -156,7 +185,7 @@ class UIButtonPanel:
         else:
             rec_icon = icon_to_image("circle", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
             self.record_btn.config(
-                text=" Record",
+                text=RECORD_LABEL,
                 image=rec_icon,
                 bg=theme.BTN_BG,
                 fg=theme.BTN_FG,
@@ -173,3 +202,4 @@ class UIButtonPanel:
     def disable(self):
         self.record_btn.config(state="disabled")
         self.select_btn.config(state="disabled")
+        self.close_btn.config(state="disabled")
