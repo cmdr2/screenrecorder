@@ -135,8 +135,12 @@ class UIButtonPanel:
                 highlightbackground=theme.BTN_BORDER_COLOR,
                 highlightcolor=theme.BTN_BORDER_COLOR,
                 highlightthickness=theme.BTN_BORDER_WIDTH,
+                state="normal",
             )
             self.record_btn.image = stop_icon
+            # Disable other buttons while recording
+            self.select_btn.config(state="disabled")
+            self.close_btn.config(state="disabled")
         else:
             rec_icon = icon_to_image("circle", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
             self.record_btn.config(
@@ -149,10 +153,12 @@ class UIButtonPanel:
                 highlightbackground=theme.BTN_BORDER_COLOR,
                 highlightcolor=theme.BTN_BORDER_COLOR,
                 highlightthickness=theme.BTN_BORDER_WIDTH,
+                state="normal",
             )
             self.record_btn.image = rec_icon
-            self.record_btn.config(state="normal")
+            # Re-enable other buttons when not recording
             self.select_btn.config(state="normal")
+            self.close_btn.config(state="normal")
 
     def disable(self):
         self.record_btn.config(state="disabled")
