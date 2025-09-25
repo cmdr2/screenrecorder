@@ -138,6 +138,32 @@ menu, a prominent item in the list meets this criterion.
 
 ---
 
+## pystray
+
+**Version**: 0.19.5
+**License**: GNU Lesser General Public License v3 (LGPLv3)
+**Website**: https://github.com/moses-palmer/pystray
+**Source Code**: https://github.com/moses-palmer/pystray
+
+### Copyright Notice
+Copyright © 2016-2024 Moses Palmér and contributors
+
+### License Summary
+pystray is licensed under the GNU Lesser General Public License version 3 (LGPLv3). This library is used to create system tray icons in the screen recorder application. The LGPL allows linking to the library without requiring the entire application to be GPL-licensed, provided that users can replace the library with a different version.
+
+### Source Code Availability
+The source code for pystray is available at: https://github.com/moses-palmer/pystray
+
+Users have the right to obtain, modify, and redistribute the pystray source code under the terms of the LGPL license.
+
+### GNU Lesser General Public License v3
+
+The complete text of the LGPL v3 license can be found at: https://www.gnu.org/licenses/lgpl-3.0.html
+
+---
+
 ## Additional Notes
 
 This application uses FFmpeg as an external executable for video processing capabilities. No FFmpeg code has been modified or integrated into this application's source code.
+
+The pystray library is dynamically linked and used for system tray functionality. Users are free to replace this library with alternative implementations or updated versions as permitted by the LGPL license.
