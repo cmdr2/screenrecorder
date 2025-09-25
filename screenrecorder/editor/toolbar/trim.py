@@ -27,7 +27,7 @@ class Trim:
         self.end_time_var = None
         self.end_time_entry = None
         self.apply_button = None
-        self.undo_button = None
+        self.cancel_button = None
 
     def create_button(self, parent):
         """Create the trim button with FontAwesome icon."""
@@ -101,7 +101,23 @@ class Trim:
         buttons_frame = tk.Frame(controls_frame, bg=theme.PANEL_BG)
         buttons_frame.pack(side=tk.LEFT)
 
-        # Apply button
+        # Cancel button
+        self.cancel_button = tk.Button(
+            buttons_frame,
+            text="Cancel",
+            command=self.toggle_panel,
+            bg=theme.COLOR_TERTIARY,
+            fg=theme.COLOR_FG,
+            font=("Segoe UI", 10, "bold"),
+            relief=theme.BTN_RELIEF,
+            bd=0,
+            padx=12,
+            pady=4,
+            cursor="hand2",
+        )
+        self.cancel_button.pack(side=tk.LEFT, padx=(0, 8))
+
+        # Trim button
         self.apply_button = tk.Button(
             buttons_frame,
             text="Trim",
@@ -115,14 +131,7 @@ class Trim:
             pady=4,
             cursor="hand2",
         )
-        self.apply_button.pack(side=tk.LEFT, padx=(0, 8))
-
-        # Undo button using history module
-        self.undo_button = self.history.create_undo_button(buttons_frame, command_callback=self._after_undo)
-        self.undo_button.pack(side=tk.LEFT)
-
-        # Update undo button state
-        self.history.update_undo_button_state(self.undo_button)
+        self.apply_button.pack(side=tk.LEFT)
 
         return self.trim_panel
 
@@ -184,9 +193,6 @@ class Trim:
                 self.start_time_var.set("0")
                 # Update end time to new duration
                 self.end_time_var.set(self._get_video_duration_str())
-
-                # Update undo button state
-                self.history.update_undo_button_state(self.undo_button)
             else:
                 self.toolbar.show_error(f"Trimming failed: {process.stderr}")
                 # Clean up temp file on failure
@@ -199,16 +205,6 @@ class Trim:
             self.toolbar.show_error("Please enter valid numeric values for times.")
         except Exception as e:
             self.toolbar.show_error(f"An error occurred: {str(e)}")
-
-    def _after_undo(self):
-        """Callback after undo operation - update UI state."""
-        # Update end time to previous video's duration
-        if self.end_time_var:
-            self.end_time_var.set(self._get_video_duration_str())
-
-        # Update undo button state
-        if self.undo_button:
-            self.history.update_undo_button_state(self.undo_button)
 
     def _get_video_duration_str(self):
         """Get the duration of the current video as a string."""

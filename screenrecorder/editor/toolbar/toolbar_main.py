@@ -5,6 +5,7 @@ from .trim import Trim
 from .resize import Resize
 from .save import Save
 from .copy_to_clipboard import CopyToClipboard
+from .undo import Undo
 
 
 class Toolbar:
@@ -24,6 +25,7 @@ class Toolbar:
         self.resize_tool = Resize(self)
         self.save_tool = Save(self)
         self.copy_tool = CopyToClipboard(self)
+        self.undo_tool = Undo(self)
 
         # Create main toolbar frame
         self.toolbar_frame = tk.Frame(parent, bg=theme.COLOR_BG)
@@ -42,6 +44,9 @@ class Toolbar:
 
         self.copy_button = self.copy_tool.create_button(self.operations_frame)
         self.copy_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
+
+        self.undo_button = self.undo_tool.create_button(self.operations_frame)
+        self.undo_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
 
         # Create modifiers buttons (Trim, Resize)
         self.modifiers_frame = tk.Frame(self.buttons_frame, bg=theme.COLOR_BG)
@@ -66,6 +71,9 @@ class Toolbar:
             "resize": self.resize_button,
         }
 
+        # Initialize button states
+        self.update_all_button_states()
+
     def show_panel(self, panel_name):
         """Show specified panel and hide others."""
         # Hide all panels first
@@ -89,6 +97,9 @@ class Toolbar:
         # Update modifier buttons based on active panel
         self.trim_tool.update_button_state(self.trim_button)
         self.resize_tool.update_button_state(self.resize_button)
+
+        # Update undo button state
+        self.undo_tool.update_button_state(self.undo_button)
 
     def add_to_history(self, video_path):
         """Add a new video to the history (deprecated - use EditHistory instead)."""

@@ -27,6 +27,10 @@ class EditHistory:
         self.toolbar.video_history.append(video_path)
         self.toolbar.current_video_index += 1
 
+        # Update undo button state in toolbar
+        if hasattr(self.toolbar, "undo_tool") and hasattr(self.toolbar, "undo_button"):
+            self.toolbar.undo_tool.update_button_state(self.toolbar.undo_button)
+
     def can_undo(self):
         """Check if undo operation is possible."""
         return self.toolbar.current_video_index > 0
@@ -38,6 +42,11 @@ class EditHistory:
             previous_video = self.toolbar.video_history[self.toolbar.current_video_index]
             self.video_player.src = previous_video
             self.toolbar.show_success("Undo successful!")
+
+            # Update undo button state in toolbar
+            if hasattr(self.toolbar, "undo_tool") and hasattr(self.toolbar, "undo_button"):
+                self.toolbar.undo_tool.update_button_state(self.toolbar.undo_button)
+
             return True
         return False
 

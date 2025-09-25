@@ -23,15 +23,18 @@ class Resize:
 
         # Initialize resize panel
         self.resize_panel = None
-        self.percentage_var = None
-        self.percentage_scale = None
-        self.resolution_label = None
+        self.width_var = None
+        self.height_var = None
+        self.width_entry = None
+        self.height_entry = None
         self.apply_button = None
-        self.undo_button = None
+        self.cancel_button = None
 
         # Video dimensions cache
         self.original_width = None
         self.original_height = None
+        self.aspect_ratio = None
+        self._updating_dimensions = False  # Flag to prevent infinite loops
 
     def create_button(self, parent):
         """Create the resize button with FontAwesome icon."""
@@ -87,30 +90,59 @@ class Resize:
             print(f"Error getting video dimensions: {e}")
             return None, None
 
-    def _calculate_new_dimensions(self, percentage):
-        """Calculate new dimensions based on percentage, ensuring multiples of 2."""
-        if self.original_width is None or self.original_height is None:
-            return None, None
+    def _ensure_multiple_of_2(self, value):
+        """Ensure a value is a multiple of 2."""
+        return value + (value % 2)
 
-        new_width = int(self.original_width * percentage / 100)
-        new_height = int(self.original_height * percentage / 100)
+    def _update_width_from_height(self, height):
+        """Update width based on height while maintaining aspect ratio."""
+        if self.aspect_ratio and not self._updating_dimensions:
+            self._updating_dimensions = True
+            new_width = self._ensure_multiple_of_2(int(height * self.aspect_ratio))
+            self.width_var.set(str(new_width))
+            self._updating_dimensions = False
 
-        # Ensure dimensions are multiples of 2
-        new_width = new_width + (new_width % 2)
-        new_height = new_height + (new_height % 2)
+    def _update_height_from_width(self, width):
+        """Update height based on width while maintaining aspect ratio."""
+        if self.aspect_ratio and not self._updating_dimensions:
+            self._updating_dimensions = True
+            new_height = self._ensure_multiple_of_2(int(width / self.aspect_ratio))
+            self.height_var.set(str(new_height))
+            self._updating_dimensions = False
 
-        return new_width, new_height
+    def _on_width_focus_out(self, event):
+        """Handle width entry losing focus - apply rounding and aspect ratio locking."""
+        try:
+            if self._updating_dimensions:
+                return
+            width_str = self.width_var.get().strip()
+            if width_str:
+                width = int(width_str)
+                # Ensure multiple of 2
+                width = self._ensure_multiple_of_2(width)
+                self.width_var.set(str(width))
+                # Update height proportionally
+                self._update_height_from_width(width)
+        except ValueError:
+            # Reset to original width if invalid input
+            self.width_var.set(str(self.original_width))
 
-    def _update_resolution_preview(self, percentage=None):
-        """Update the resolution preview label."""
-        if percentage is None:
-            percentage = self.percentage_var.get()
-
-        new_width, new_height = self._calculate_new_dimensions(percentage)
-
-        if new_width and new_height and self.resolution_label:
-            text = f"New resolution: {new_width} x {new_height} ({percentage}%)"
-            self.resolution_label.config(text=text)
+    def _on_height_focus_out(self, event):
+        """Handle height entry losing focus - apply rounding and aspect ratio locking."""
+        try:
+            if self._updating_dimensions:
+                return
+            height_str = self.height_var.get().strip()
+            if height_str:
+                height = int(height_str)
+                # Ensure multiple of 2
+                height = self._ensure_multiple_of_2(height)
+                self.height_var.set(str(height))
+                # Update width proportionally
+                self._update_width_from_height(height)
+        except ValueError:
+            # Reset to original height if invalid input
+            self.height_var.set(str(self.original_height))
 
     def create_panel(self, parent):
         """Create the resize panel with controls."""
@@ -141,64 +173,83 @@ class Resize:
 
             return self.resize_panel
 
+        # Calculate aspect ratio
+        self.aspect_ratio = self.original_width / self.original_height
+
         # Controls frame
         controls_frame = tk.Frame(self.resize_panel, bg=theme.PANEL_BG)
         controls_frame.pack(fill=tk.X, padx=theme.PANEL_PADX, pady=theme.PANEL_PADY)
 
-        # Top info frame for original size and preview
-        info_frame = tk.Frame(controls_frame, bg=theme.PANEL_BG)
-        info_frame.pack(fill=tk.X, padx=(0, 0), pady=(0, 8))
-
+        # Original size label
         original_label = tk.Label(
-            info_frame,
+            controls_frame,
             text=f"Original: {self.original_width} x {self.original_height}",
             bg=theme.PANEL_BG,
             fg=theme.COLOR_FG,
             font=("Segoe UI", 10),
         )
-        original_label.pack(side=tk.LEFT, anchor=tk.N)
+        original_label.pack(side=tk.LEFT, anchor=tk.N, padx=(0, 20))
 
-        self.resolution_label = tk.Label(
-            info_frame,
-            text="New resolution: calculating...",
-            bg=theme.PANEL_BG,
-            fg=theme.COLOR_PRIMARY,
-            font=("Segoe UI", 10, "bold"),
-        )
-        self.resolution_label.pack(side=tk.LEFT, anchor=tk.N, padx=(16, 0))
-
-        # Percentage slider
-        slider_frame = tk.Frame(controls_frame, bg=theme.PANEL_BG)
-        slider_frame.pack(side=tk.LEFT, padx=(0, 20))
+        # New size frame
+        new_size_frame = tk.Frame(controls_frame, bg=theme.PANEL_BG)
+        new_size_frame.pack(side=tk.LEFT, padx=(0, 20))
 
         tk.Label(
-            slider_frame, text="Resize percentage:", bg=theme.PANEL_BG, fg=theme.COLOR_FG, font=("Segoe UI", 10)
-        ).pack(anchor=tk.W, pady=(5, 0))
-
-        # Percentage variable and slider
-        self.percentage_var = tk.IntVar(value=100)
-        self.percentage_scale = tk.Scale(
-            slider_frame,
-            from_=10,
-            to=200,
-            orient=tk.HORIZONTAL,
-            variable=self.percentage_var,
-            command=lambda val: self._update_resolution_preview(),
+            new_size_frame,
+            text="New Size:",
             bg=theme.PANEL_BG,
             fg=theme.COLOR_FG,
-            highlightbackground=theme.PANEL_BG,
-            troughcolor=theme.COLOR_TERTIARY,
-            activebackground=theme.COLOR_PRIMARY,
-            length=200,
-            font=("Segoe UI", 9),
+            font=("Segoe UI", 10),
+        ).pack(anchor=tk.W)
+
+        # Dimension inputs
+        dimensions_frame = tk.Frame(new_size_frame, bg=theme.PANEL_BG)
+        dimensions_frame.pack(anchor=tk.W, pady=(2, 0))
+
+        # Width entry
+        self.width_var = tk.StringVar(value=str(self.original_width))
+        self.width_entry = tk.Entry(
+            dimensions_frame, textvariable=self.width_var, width=6, font=("Segoe UI", 10), justify="center"
         )
-        self.percentage_scale.pack(anchor=tk.W, pady=(2, 0))
+        self.width_entry.pack(side=tk.LEFT)
+
+        # X label
+        tk.Label(
+            dimensions_frame,
+            text="×",
+            bg=theme.PANEL_BG,
+            fg=theme.COLOR_FG,
+            font=("Segoe UI", 12, "bold"),
+        ).pack(side=tk.LEFT, padx=(5, 5))
+
+        # Height entry
+        self.height_var = tk.StringVar(value=str(self.original_height))
+        self.height_entry = tk.Entry(
+            dimensions_frame, textvariable=self.height_var, width=6, font=("Segoe UI", 10), justify="center"
+        )
+        self.height_entry.pack(side=tk.LEFT)
 
         # Buttons frame
         buttons_frame = tk.Frame(controls_frame, bg=theme.PANEL_BG)
         buttons_frame.pack(side=tk.LEFT)
 
-        # Apply button
+        # Cancel button
+        self.cancel_button = tk.Button(
+            buttons_frame,
+            text="Cancel",
+            command=self.toggle_panel,
+            bg=theme.COLOR_TERTIARY,
+            fg=theme.COLOR_FG,
+            font=("Segoe UI", 10, "bold"),
+            relief=theme.BTN_RELIEF,
+            bd=0,
+            padx=12,
+            pady=4,
+            cursor="hand2",
+        )
+        self.cancel_button.pack(side=tk.LEFT, padx=(0, 8))
+
+        # Resize button
         self.apply_button = tk.Button(
             buttons_frame,
             text="Resize",
@@ -212,33 +263,39 @@ class Resize:
             pady=4,
             cursor="hand2",
         )
-        self.apply_button.pack(side=tk.LEFT, padx=(0, 8))
+        self.apply_button.pack(side=tk.LEFT)
 
-        # Undo button using history module
-        self.undo_button = self.history.create_undo_button(buttons_frame, command_callback=self._after_undo)
-        self.undo_button.pack(side=tk.LEFT)
-
-        # Initialize the resolution preview
-        self._update_resolution_preview()
-
-        # Update undo button state
-        self.history.update_undo_button_state(self.undo_button)
+        # Bind focus out events for aspect ratio locking and rounding
+        self.width_entry.bind("<FocusOut>", self._on_width_focus_out)
+        self.height_entry.bind("<FocusOut>", self._on_height_focus_out)
 
         return self.resize_panel
 
     def apply_resize(self):
         """Apply video resizing using ffmpeg."""
         try:
-            percentage = self.percentage_var.get()
+            width_str = self.width_var.get().strip()
+            height_str = self.height_var.get().strip()
 
-            if percentage == 100:
-                self.toolbar.show_error("No resize needed - already at 100%")
+            if not width_str or not height_str:
+                self.toolbar.show_error("Please enter valid width and height values")
                 return
 
-            new_width, new_height = self._calculate_new_dimensions(percentage)
+            new_width = int(width_str)
+            new_height = int(height_str)
 
-            if not new_width or not new_height:
-                self.toolbar.show_error("Could not calculate new dimensions")
+            # Ensure dimensions are multiples of 2
+            new_width = self._ensure_multiple_of_2(new_width)
+            new_height = self._ensure_multiple_of_2(new_height)
+
+            # Check if dimensions have actually changed
+            if new_width == self.original_width and new_height == self.original_height:
+                self.toolbar.show_error("No resize needed - dimensions are the same")
+                return
+
+            # Validate minimum dimensions
+            if new_width < 2 or new_height < 2:
+                self.toolbar.show_error("Dimensions must be at least 2 pixels")
                 return
 
             # Create temporary file for resized video
@@ -268,17 +325,15 @@ class Resize:
                 # Success - update video player and history
                 self.history.add_to_history(temp_path)
                 self.video_player.src = temp_path
-                self.toolbar.show_success(f"Video resized to {new_width}x{new_height} ({percentage}%)")
+                self.toolbar.show_success(f"Video resized to {new_width}x{new_height}")
 
                 # Update original dimensions for further operations
                 self.original_width, self.original_height = self._get_video_dimensions()
+                self.aspect_ratio = self.original_width / self.original_height
 
-                # Reset slider to 100% and update preview
-                self.percentage_var.set(100)
-                self._update_resolution_preview()
-
-                # Update undo button state
-                self.history.update_undo_button_state(self.undo_button)
+                # Reset inputs to new dimensions
+                self.width_var.set(str(self.original_width))
+                self.height_var.set(str(self.original_height))
             else:
                 self.toolbar.show_error(f"Resize failed: {process.stderr}")
                 # Clean up temp file on failure
@@ -287,19 +342,7 @@ class Resize:
                 except:
                     pass
 
+        except ValueError:
+            self.toolbar.show_error("Please enter valid numeric values for dimensions")
         except Exception as e:
             self.toolbar.show_error(f"An error occurred: {str(e)}")
-
-    def _after_undo(self):
-        """Callback after undo operation - update UI state."""
-        # Update original dimensions after undo
-        self.original_width, self.original_height = self._get_video_dimensions()
-
-        # Reset slider to 100% and update preview
-        if self.percentage_var:
-            self.percentage_var.set(100)
-            self._update_resolution_preview()
-
-        # Update undo button state
-        if self.undo_button:
-            self.history.update_undo_button_state(self.undo_button)
