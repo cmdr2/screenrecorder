@@ -68,6 +68,9 @@ class TrimPopup(ToolPopup):
         )
         self.start_time_entry.pack(side=tk.LEFT, padx=(10, 0))
 
+        # Clamp value on unfocus
+        self.start_time_entry.bind("<FocusOut>", lambda e: self.clamp_time_entries())
+
         tk.Label(
             start_row,
             text="sec",
@@ -96,19 +99,27 @@ class TrimPopup(ToolPopup):
         )
         self.end_time_entry.pack(side=tk.LEFT, padx=(10, 0))
 
-        tk.Label(
-            end_row,
-            text="sec",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_TERTIARY,
-            font=theme.FONT_NORMAL,
-        ).pack(side=tk.LEFT, padx=(5, 0))
+        # Clamp value on unfocus
+        self.end_time_entry.bind("<FocusOut>", lambda e: self.clamp_time_entries())
 
-        # Set focus to start time entry
-        self.start_time_entry.focus_set()
+    def clamp_time_entries(self):
+        """Clamp start and end time entry values to [0, duration]."""
+        video_duration = self._get_video_duration()
+        try:
+            start_time = float(self.start_time_var.get().strip())
+        except ValueError:
+            start_time = 0.0
+        try:
+            end_time = float(self.end_time_var.get().strip())
+        except ValueError:
+            end_time = video_duration
 
-        # Select all text in start time entry for easy editing
-        self.start_time_entry.select_range(0, tk.END)
+        start_time = max(0.0, min(start_time, video_duration))
+        end_time = max(0.0, min(end_time, video_duration))
+
+        # If start >= end, keep as is (let apply_action handle it)
+        self.start_time_var.set(f"{start_time:.1f}")
+        self.end_time_var.set(f"{end_time:.1f}")
 
     def _get_video_duration(self):
         """Get the duration of the current video."""
@@ -118,35 +129,44 @@ class TrimPopup(ToolPopup):
             return 0.0
 
     def apply_action(self):
-        """Apply video trimming using ffmpeg."""
+        """Apply video trimming using ffmpeg, clamping times to [0, duration]."""
         try:
             start_time_str = self.start_time_var.get().strip()
             end_time_str = self.end_time_var.get().strip()
 
-            if not start_time_str or not end_time_str:
-                self.show_error("Please enter valid start and end times")
-                return
-
-            start_time = float(start_time_str)
-            end_time = float(end_time_str)
-
-            if start_time >= end_time:
-                self.show_error("Start time must be less than end time")
-                return
-
-            if start_time < 0:
-                self.show_error("Start time must be positive")
-                return
-
             video_duration = self._get_video_duration()
-            if end_time > video_duration:
-                self.show_error(f"End time cannot exceed video duration ({video_duration:.1f}s)")
+
+            # Parse and clamp times
+            try:
+                start_time = float(start_time_str)
+            except ValueError:
+                start_time = 0.0
+            try:
+                end_time = float(end_time_str)
+            except ValueError:
+                end_time = video_duration
+
+            # Clamp to [0, video_duration]
+            start_time = max(0.0, min(start_time, video_duration))
+            end_time = max(0.0, min(end_time, video_duration))
+
+            # Ensure start < end, else swap
+            if start_time >= end_time:
+                # If both are equal, do nothing; if swapped, fix
+                if start_time == end_time:
+                    # Nothing to trim
+                    self.close_with_result(None)
+                    return
+                start_time, end_time = min(start_time, end_time), max(start_time, end_time)
+
+            # If trimming is not needed (full video), just close
+            if start_time == 0 and end_time >= video_duration:
+                self.close_with_result(None)
                 return
 
-            # Check if trimming is actually needed
-            if start_time == 0 and end_time >= video_duration:
-                self.show_error("No trimming needed - you've selected the entire video")
-                return
+            # Update entry fields to reflect clamped values
+            self.start_time_var.set(f"{start_time:.1f}")
+            self.end_time_var.set(f"{end_time:.1f}")
 
             # Create temporary file for trimmed video
             temp_fd, temp_path = tempfile.mkstemp(suffix=".mp4")
@@ -180,18 +200,13 @@ class TrimPopup(ToolPopup):
                 self.history.add_to_history(temp_path)
                 self.video_player.src = temp_path
                 self.toolbar.show_success(f"Video trimmed from {start_time}s to {end_time}s")
-
-                # Close popup with success result
                 self.close_with_result("success")
             else:
-                self.show_error(f"Trimming failed: {process.stderr}")
                 # Clean up temp file on failure
                 try:
                     os.unlink(temp_path)
                 except:
                     pass
-
-        except ValueError:
-            self.show_error("Please enter valid numeric values for times")
-        except Exception as e:
-            self.show_error(f"An error occurred: {str(e)}")
+                self.close_with_result(None)
+        except Exception:
+            self.close_with_result(None)
