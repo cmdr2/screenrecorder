@@ -2,8 +2,8 @@ import tkinter as tk
 
 
 from tkfontawesome import icon_to_image
-from .config import get_panel_position, set_panel_position
-from . import theme
+from ..config import get_panel_position, set_panel_position
+from .. import theme
 
 
 class UIButtonPanel:
@@ -13,13 +13,13 @@ class UIButtonPanel:
         self.button_win.attributes("-topmost", True)
         self.button_win.withdraw()
         self.button_win.configure(
-            bg=theme.PANEL_BG,
-            bd=theme.PANEL_BORDER_WIDTH,
-            highlightbackground=theme.PANEL_BORDER_COLOR,
-            highlightcolor=theme.PANEL_BORDER_COLOR,
-            highlightthickness=theme.PANEL_BORDER_WIDTH,
-            padx=theme.PANEL_PADX,
-            pady=theme.PANEL_PADY,
+            bg=theme.OVERLAY_PANEL_BG,
+            bd=theme.OVERLAY_PANEL_BORDER_WIDTH,
+            highlightbackground=theme.OVERLAY_PANEL_BORDER_COLOR,
+            highlightcolor=theme.OVERLAY_PANEL_BORDER_COLOR,
+            highlightthickness=theme.OVERLAY_PANEL_BORDER_WIDTH,
+            padx=theme.OVERLAY_PANEL_PADX,
+            pady=theme.OVERLAY_PANEL_PADY,
         )
 
         # Drag icon (FontAwesome)
@@ -31,7 +31,7 @@ class UIButtonPanel:
             width=32,
             height=32,
             bd=0,
-            highlightbackground=theme.PANEL_BORDER_COLOR,
+            highlightbackground=theme.OVERLAY_PANEL_BORDER_COLOR,
             highlightthickness=0,
         )
         self.drag_icon.image = drag_img

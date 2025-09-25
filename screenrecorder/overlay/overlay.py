@@ -1,10 +1,10 @@
 import tkinter as tk
 
 import ctypes
-from .utils import passthrough_mouse_clicks, capture_mouse_clicks
-from .config import get_region, set_region
+from ..utils import passthrough_mouse_clicks, capture_mouse_clicks
+from ..config import get_region, set_region
 from .ui_buttons import UIButtonPanel
-from .editor import EditorWindow as PreviewEditorWindow
+from ..editor import EditorWindow as PreviewEditorWindow
 
 
 class OverlayWindow:
@@ -83,7 +83,7 @@ class OverlayWindow:
             self.enter_waiting_mode()
 
             if self.recorder.temp_video_path:
-                from .utils import copy_files_to_clipboard
+                from ..utils import copy_files_to_clipboard
 
                 try:
                     copy_files_to_clipboard(self.recorder.temp_video_path)

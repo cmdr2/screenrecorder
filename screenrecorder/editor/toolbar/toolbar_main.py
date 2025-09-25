@@ -29,7 +29,7 @@ class Toolbar:
 
         # Create buttons frame
         self.buttons_frame = tk.Frame(self.toolbar_frame, bg=theme.COLOR_BG)
-        self.buttons_frame.pack(side=tk.TOP, fill=tk.X, padx=theme.PANEL_PADX, pady=theme.PANEL_PADY)
+        self.buttons_frame.pack(side=tk.TOP, fill=tk.X, padx=theme.OVERLAY_PANEL_PADX, pady=theme.OVERLAY_PANEL_PADY)
 
         # Create operations buttons (Save, Copy to Clipboard, Undo)
         self.operations_frame = tk.Frame(self.buttons_frame, bg=theme.COLOR_BG)
