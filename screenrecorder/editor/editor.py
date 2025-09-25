@@ -12,7 +12,19 @@ class EditorWindow:
         else:
             self.root = parent
         self.root.title("Preview video")
-        self.root.geometry("640x480")
+
+        # Set window size
+        window_width = 640
+        window_height = 480
+
+        # Calculate center position
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        # Set geometry with center position
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.root.configure(bg=theme.COLOR_BG)
         # Ensure window is focused and on top
         self.root.lift()
