@@ -10,34 +10,27 @@ from tkfontawesome import icon_to_image
 from . import theme
 
 
-class ButtonFactory:
-    """Factory for creating styled buttons with consistent appearance."""
+class Button(tk.Button):
+    """
+    A themed Button widget using app-wide button style constants.
 
-    @staticmethod
-    def create_icon_button(parent, text, icon_name, command, **kwargs):
-        """
-        Create a button with icon and text using theme styling.
+    This class extends tk.Button to provide a consistent appearance and behavior
+    for buttons across the application. It applies default styling and allows
+    for additional customization through parameters.
 
-        Args:
-            parent: Parent widget
-            text: Button text
-            icon_name: FontAwesome icon name
-            command: Button callback function
-            **kwargs: Additional button configuration options
+    Example usage:
+        btn = Button(parent, text="Click Me", command=my_callback)
+        btn.pack()
+    """
 
-        Returns:
-            tk.Button: Configured button widget
-        """
-        # Create icon
-        icon_color = kwargs.pop("icon_color", theme.BTN_FG)
-        icon_size = kwargs.pop("icon_size", theme.ICON_SIZE)
-        icon_img = icon_to_image(icon_name, fill=icon_color, scale_to_width=icon_size)
+    def __init__(self, parent, text, command=None, icon_name=None, **kwargs):
+        if icon_name:
+            icon_color = kwargs.pop("icon_color", theme.BTN_FG)
+            icon_size = kwargs.pop("icon_size", theme.ICON_SIZE)
+            icon_img = icon_to_image(icon_name, fill=icon_color, scale_to_width=icon_size)
 
-        # Default button configuration
-        default_config = {
+        config = {
             "text": text,
-            "image": icon_img,
-            "compound": "left",
             "command": command,
             "font": theme.BTN_FONT,
             "bg": theme.BTN_BG,
@@ -53,46 +46,13 @@ class ButtonFactory:
             "pady": theme.BTN_PADY,
             "cursor": "hand2",
         }
+        if icon_name:
+            config["image"] = icon_img
+            config["compound"] = "left"
+            self.icon_img = icon_img  # Keep reference to prevent garbage collection
 
-        # Override with provided kwargs
-        default_config.update(kwargs)
-
-        button = tk.Button(parent, **default_config)
-        button.image = icon_img  # Keep reference to prevent garbage collection
-
-        return button
-
-    @staticmethod
-    def create_drag_handle(parent, **kwargs):
-        """
-        Create a drag handle icon for moveable panels.
-
-        Args:
-            parent: Parent widget
-            **kwargs: Additional label configuration options
-
-        Returns:
-            tk.Label: Configured drag handle widget
-        """
-        drag_img = icon_to_image("grip-vertical", fill=theme.DRAG_ICON_COLOR, scale_to_width=theme.DRAG_ICON_SIZE // 2)
-
-        default_config = {
-            "image": drag_img,
-            "bg": theme.DRAG_ICON_BG,
-            "width": 32,
-            "height": 32,
-            "bd": 0,
-            "highlightbackground": theme.OVERLAY_PANEL_BORDER_COLOR,
-            "highlightthickness": 0,
-            "cursor": "fleur",
-        }
-
-        default_config.update(kwargs)
-
-        drag_handle = tk.Label(parent, **default_config)
-        drag_handle.image = drag_img  # Keep reference
-
-        return drag_handle
+        config.update(kwargs)
+        super().__init__(parent, **config)
 
 
 class Textbox(tk.Entry):

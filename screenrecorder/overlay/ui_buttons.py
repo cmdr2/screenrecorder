@@ -9,7 +9,7 @@ import tkinter as tk
 from tkfontawesome import icon_to_image
 from ..config import get_panel_position, set_panel_position
 from .. import theme
-from ..ui_factory import ButtonFactory
+from .. import ui_factory
 
 RECORD_LABEL = "Record"
 STOP_LABEL = "Stop"
@@ -60,24 +60,28 @@ class UIButtonPanel:
     def _create_buttons(self, on_record, on_select, on_close):
         """Create all buttons using the button factory."""
         # Drag handle
-        self.drag_icon = ButtonFactory.create_drag_handle(self.button_win)
+        self.drag_icon = self.create_drag_handle(self.button_win)
         self.drag_icon.pack(side="left", padx=theme.DRAG_ICON_PADX, pady=theme.DRAG_ICON_PADY)
 
         # Record button
-        self.record_btn = ButtonFactory.create_icon_button(
-            self.button_win, RECORD_LABEL, "circle", on_record, icon_color=theme.RECORD_ICON_COLOR
+        self.record_btn = ui_factory.Button(
+            self.button_win, RECORD_LABEL, command=on_record, icon_name="circle", icon_color=theme.RECORD_ICON_COLOR
         )
         self.record_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
         # Region select button
-        self.select_btn = ButtonFactory.create_icon_button(
-            self.button_win, SELECT_LABEL, "object-group", on_select, icon_color=theme.REGION_ICON_COLOR
+        self.select_btn = ui_factory.Button(
+            self.button_win,
+            SELECT_LABEL,
+            command=on_select,
+            icon_name="object-group",
+            icon_color=theme.REGION_ICON_COLOR,
         )
         self.select_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
         # Close button
-        self.close_btn = ButtonFactory.create_icon_button(
-            self.button_win, CLOSE_LABEL, "times", on_close, icon_color=theme.RECORD_ICON_COLOR
+        self.close_btn = ui_factory.Button(
+            self.button_win, CLOSE_LABEL, command=on_close, icon_name="times", icon_color=theme.RECORD_ICON_COLOR
         )
         self.close_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
