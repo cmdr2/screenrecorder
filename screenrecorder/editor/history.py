@@ -74,7 +74,7 @@ class EditHistory:
             command=undo_command,
             bg=theme.COLOR_TERTIARY,
             fg=theme.COLOR_FG,
-            font=("Segoe UI", 10, "bold"),
+            font=theme.FONT_BOLD,
             relief=theme.BTN_RELIEF,
             bd=0,
             padx=12,

@@ -9,6 +9,12 @@ COLOR_PRIMARY = "#3498db"  # Primary accent (blue)
 COLOR_SECONDARY = "#e74c3c"  # Secondary accent (red)
 COLOR_TERTIARY = "#888"  # Tertiary accent (gray)
 
+FONT_NAME = "Segoe UI"
+FONT_SIZE = 10
+FONT_NORMAL = (FONT_NAME, FONT_SIZE, "normal")
+FONT_BOLD = (FONT_NAME, FONT_SIZE, "bold")
+FONT_ITALIC = (FONT_NAME, FONT_SIZE, "italic")
+
 # Panel
 PANEL_BG = COLOR_BG
 PANEL_BORDER_COLOR = COLOR_BORDER

@@ -1,11 +1,12 @@
 import tkinter as tk
 
 from ... import theme
-from .trim import Trim
-from .resize import Resize
 from .save import Save
 from .copy_to_clipboard import CopyToClipboard
 from .undo import Undo
+from .resize_popup import ResizePopup
+from .trim_popup import TrimPopup
+from .button_utils import StylizedButton
 
 
 class Toolbar:
@@ -17,12 +18,7 @@ class Toolbar:
         self.video_history = [video_path]  # Track video versions for undo
         self.current_video_index = 0
 
-        # State tracking
-        self.active_panel = None  # 'trim' or 'resize'
-
         # Initialize tools
-        self.trim_tool = Trim(self)
-        self.resize_tool = Resize(self)
         self.save_tool = Save(self)
         self.copy_tool = CopyToClipboard(self)
         self.undo_tool = Undo(self)
@@ -35,7 +31,7 @@ class Toolbar:
         self.buttons_frame = tk.Frame(self.toolbar_frame, bg=theme.COLOR_BG)
         self.buttons_frame.pack(side=tk.TOP, fill=tk.X, padx=theme.PANEL_PADX, pady=theme.PANEL_PADY)
 
-        # Create operations buttons (Save, Copy to Clipboard)
+        # Create operations buttons (Save, Copy to Clipboard, Undo)
         self.operations_frame = tk.Frame(self.buttons_frame, bg=theme.COLOR_BG)
         self.operations_frame.pack(side=tk.LEFT, padx=(0, 20))
 
@@ -48,56 +44,47 @@ class Toolbar:
         self.undo_button = self.undo_tool.create_button(self.operations_frame)
         self.undo_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
 
-        # Create modifiers buttons (Trim, Resize)
+        # Create modifiers buttons (Trim, Resize) - now use popups
         self.modifiers_frame = tk.Frame(self.buttons_frame, bg=theme.COLOR_BG)
         self.modifiers_frame.pack(side=tk.LEFT)
 
-        self.trim_button = self.trim_tool.create_button(self.modifiers_frame)
+        # Create trim button
+        self.trim_button = StylizedButton.create_button(
+            parent=self.modifiers_frame,
+            text="Trim",
+            icon_name="cut",
+            command=self.open_trim_popup,
+            active=False,
+        )
         self.trim_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
 
-        self.resize_button = self.resize_tool.create_button(self.modifiers_frame)
+        # Create resize button
+        self.resize_button = StylizedButton.create_button(
+            parent=self.modifiers_frame,
+            text="Resize",
+            icon_name="expand-arrows-alt",
+            command=self.open_resize_popup,
+            active=False,
+        )
         self.resize_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
-
-        # Create panels frame (hidden by default)
-        self.panels_frame = tk.Frame(self.toolbar_frame, bg=theme.COLOR_BG)
-
-        # Initialize panels
-        self.trim_panel = self.trim_tool.create_panel(self.panels_frame)
-        self.resize_panel = self.resize_tool.create_panel(self.panels_frame)
-
-        # Store button references for state updates
-        self.tool_buttons = {
-            "trim": self.trim_button,
-            "resize": self.resize_button,
-        }
 
         # Initialize button states
         self.update_all_button_states()
 
-    def show_panel(self, panel_name):
-        """Show specified panel and hide others."""
-        # Hide all panels first
-        self.trim_panel.pack_forget()
-        self.resize_panel.pack_forget()
+    def open_trim_popup(self):
+        """Open the trim popup window."""
+        popup = TrimPopup(self.parent, self)
+        result = popup.show()
+        # Popup handles the actual trimming and provides feedback
 
-        # Show requested panel
-        if panel_name == "trim":
-            self.trim_panel.pack(fill=tk.X, padx=theme.PANEL_PADX, pady=(0, theme.PANEL_PADY))
-        elif panel_name == "resize":
-            self.resize_panel.pack(fill=tk.X, padx=theme.PANEL_PADX, pady=(0, theme.PANEL_PADY))
-
-        # Show panels frame if a panel is active
-        if panel_name:
-            self.panels_frame.pack(fill=tk.X, after=self.buttons_frame)
-        else:
-            self.panels_frame.pack_forget()
+    def open_resize_popup(self):
+        """Open the resize popup window."""
+        popup = ResizePopup(self.parent, self)
+        result = popup.show()
+        # Popup handles the actual resizing and provides feedback
 
     def update_all_button_states(self):
         """Update visual state of all buttons."""
-        # Update modifier buttons based on active panel
-        self.trim_tool.update_button_state(self.trim_button)
-        self.resize_tool.update_button_state(self.resize_button)
-
         # Update undo button state
         self.undo_tool.update_button_state(self.undo_button)
 
