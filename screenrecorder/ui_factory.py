@@ -114,3 +114,35 @@ class FrameFactory:
         default_config.update(kwargs)
 
         return tk.Frame(parent, **default_config)
+
+
+def create_textbox(parent, textvariable=None, width=10, **kwargs):
+    """
+    Create a themed Entry (textbox) widget using app-wide textbox style constants.
+
+    Args:
+        parent: Parent widget
+        textvariable: Optional tk.StringVar for the entry
+        width: Width of the entry (default 10)
+        **kwargs: Additional Entry configuration options
+
+    Returns:
+        tk.Entry: Configured Entry widget
+    """
+    config = {
+        "textvariable": textvariable,
+        "width": width,
+        "font": theme.TEXTBOX_FONT,
+        "justify": "center",
+        "relief": "flat",
+        "highlightthickness": theme.TEXTBOX_BORDER_WIDTH,
+        "highlightbackground": theme.TEXTBOX_BORDER_COLOR,
+        "highlightcolor": theme.TEXTBOX_HIGHLIGHT_COLOR,
+        "bg": theme.TEXTBOX_BG,
+        "fg": theme.TEXTBOX_FG,
+        "insertbackground": theme.TEXTBOX_FG,
+    }
+    config.update(kwargs)
+    # Remove None values (e.g., if textvariable is not provided)
+    config = {k: v for k, v in config.items() if v is not None}
+    return tk.Entry(parent, **config)

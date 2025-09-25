@@ -10,6 +10,7 @@ import tempfile
 from ... import theme
 from ...utils import get_ffmpeg_path
 from ..history import EditHistory
+from ... import ui_factory
 from .popup_base import ToolPopup
 
 
@@ -63,9 +64,7 @@ class TrimPopup(ToolPopup):
         ).pack(side=tk.LEFT)
 
         self.start_time_var = tk.StringVar(value="0.0")
-        self.start_time_entry = tk.Entry(
-            start_row, textvariable=self.start_time_var, width=10, font=theme.FONT_NORMAL, justify="center"
-        )
+        self.start_time_entry = ui_factory.create_textbox(start_row, textvariable=self.start_time_var, width=10)
         self.start_time_entry.pack(side=tk.LEFT, padx=(10, 0))
 
         # Clamp value on unfocus
@@ -94,9 +93,7 @@ class TrimPopup(ToolPopup):
         ).pack(side=tk.LEFT)
 
         self.end_time_var = tk.StringVar(value=f"{video_duration:.1f}")
-        self.end_time_entry = tk.Entry(
-            end_row, textvariable=self.end_time_var, width=10, font=theme.FONT_NORMAL, justify="center"
-        )
+        self.end_time_entry = ui_factory.create_textbox(end_row, textvariable=self.end_time_var, width=10)
         self.end_time_entry.pack(side=tk.LEFT, padx=(10, 0))
 
         # Clamp value on unfocus

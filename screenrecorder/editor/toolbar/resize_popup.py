@@ -9,6 +9,7 @@ import tempfile
 import cv2
 
 from ... import theme
+from ... import ui_factory
 from ...utils import get_ffmpeg_path
 from ..history import EditHistory
 from .popup_base import ToolPopup
@@ -105,9 +106,7 @@ class ResizePopup(ToolPopup):
         ).pack(side=tk.LEFT)
 
         self.width_var = tk.StringVar(value=str(self.original_width))
-        self.width_entry = tk.Entry(
-            dimensions_frame, textvariable=self.width_var, width=8, font=theme.FONT_NORMAL, justify="center"
-        )
+        self.width_entry = ui_factory.create_textbox(dimensions_frame, textvariable=self.width_var, width=8)
         self.width_entry.pack(side=tk.LEFT, padx=(5, 15))
 
         # X label
@@ -129,9 +128,7 @@ class ResizePopup(ToolPopup):
         ).pack(side=tk.LEFT)
 
         self.height_var = tk.StringVar(value=str(self.original_height))
-        self.height_entry = tk.Entry(
-            dimensions_frame, textvariable=self.height_var, width=8, font=theme.FONT_NORMAL, justify="center"
-        )
+        self.height_entry = ui_factory.create_textbox(dimensions_frame, textvariable=self.height_var, width=8)
         self.height_entry.pack(side=tk.LEFT, padx=(5, 0))
 
         # Bind focus out events for aspect ratio locking and rounding
