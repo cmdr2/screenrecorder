@@ -36,7 +36,7 @@ class Undo:
             if self.history.can_undo():
                 button.config(state=tk.NORMAL, bg=theme.BTN_BG, fg=theme.BTN_FG)
             else:
-                button.config(state=tk.DISABLED, bg="#555", fg="#777")
+                button.config(state=tk.DISABLED, bg=theme.BTN_BG, fg=theme.BTN_FG)
 
     def perform_undo(self):
         """Perform undo operation."""
