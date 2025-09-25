@@ -30,6 +30,8 @@ class OverlayWindow:
         self.mode = self.MODE_WAITING
         self.selecting = False
         self.dragging = False
+        self.resizing = False
+        self.resize_zone = None
         self.start_x = self.start_y = None
         self.drag_offset_x = self.drag_offset_y = None
         self.original_region = None
@@ -67,15 +69,120 @@ class OverlayWindow:
         rx, ry, rw, rh = self.recorder.region
         return rx <= x <= rx + rw and ry <= y <= ry + rh
 
+    def _get_resize_zone(self, x, y):
+        """
+        Determine which resize zone the mouse is in.
+        Returns one of: 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw', 'inside', or None
+        """
+        if not self.recorder.region:
+            return None
+
+        rx, ry, rw, rh = self.recorder.region
+        resize_margin = 8  # pixels from edge to consider as resize zone
+
+        # Check if mouse is near the region
+        if (
+            x < rx - resize_margin
+            or x > rx + rw + resize_margin
+            or y < ry - resize_margin
+            or y > ry + rh + resize_margin
+        ):
+            return None
+
+        # Determine which zone
+        near_left = abs(x - rx) <= resize_margin
+        near_right = abs(x - (rx + rw)) <= resize_margin
+        near_top = abs(y - ry) <= resize_margin
+        near_bottom = abs(y - (ry + rh)) <= resize_margin
+
+        # Corner checks first
+        if near_top and near_left:
+            return "nw"
+        elif near_top and near_right:
+            return "ne"
+        elif near_bottom and near_left:
+            return "sw"
+        elif near_bottom and near_right:
+            return "se"
+        # Edge checks
+        elif near_top:
+            return "n"
+        elif near_bottom:
+            return "s"
+        elif near_left:
+            return "w"
+        elif near_right:
+            return "e"
+        # Inside the region
+        elif self._is_point_in_region(x, y):
+            return "inside"
+
+        return None
+
+    def _handle_resize(self, event):
+        """Handle resizing the region based on the current resize zone."""
+        if not self.original_region or not self.resize_zone:
+            return
+
+        rx, ry, rw, rh = self.original_region
+        min_size = 20  # Minimum width/height
+        sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+
+        # Calculate deltas from start position
+        dx = event.x - self.start_x
+        dy = event.y - self.start_y
+
+        new_x, new_y, new_w, new_h = rx, ry, rw, rh
+
+        if "n" in self.resize_zone:  # Top edge
+            new_y = max(0, ry + dy)
+            new_h = max(min_size, rh - (new_y - ry))
+            if new_h == min_size:
+                new_y = ry + rh - min_size
+
+        if "s" in self.resize_zone:  # Bottom edge
+            new_h = max(min_size, rh + dy)
+            new_h = min(new_h, sh - ry)
+
+        if "w" in self.resize_zone:  # Left edge
+            new_x = max(0, rx + dx)
+            new_w = max(min_size, rw - (new_x - rx))
+            if new_w == min_size:
+                new_x = rx + rw - min_size
+
+        if "e" in self.resize_zone:  # Right edge
+            new_w = max(min_size, rw + dx)
+            new_w = min(new_w, sw - rx)
+
+        # Ensure region stays within screen bounds
+        if new_x + new_w > sw:
+            new_w = sw - new_x
+        if new_y + new_h > sh:
+            new_h = sh - new_y
+
+        # round up to the nearest multiple of 2 for video compatibility
+        new_w += 1 if new_w % 2 else 0
+        new_h += 1 if new_h % 2 else 0
+
+        self.recorder.region = (int(new_x), int(new_y), int(new_w), int(new_h))
+
     def _update_cursor(self, x, y):
         """Update cursor based on mouse position."""
-        if (
-            self.mode == self.MODE_RECORDING
-            and not self.recorder.recording
-            and self.recorder.region
-            and self._is_point_in_region(x, y)
-        ):
-            self.canvas.config(cursor="fleur")  # drag cursor (only when not actively recording)
+        if self.mode == self.MODE_RECORDING and not self.recorder.recording and self.recorder.region:
+            resize_zone = self._get_resize_zone(x, y)
+
+            if resize_zone == "n" or resize_zone == "s":
+                self.canvas.config(cursor="sb_v_double_arrow")  # vertical resize cursor
+            elif resize_zone == "e" or resize_zone == "w":
+                self.canvas.config(cursor="sb_h_double_arrow")  # horizontal resize cursor
+            elif resize_zone == "nw" or resize_zone == "se":
+                self.canvas.config(cursor="size_nw_se")  # diagonal resize cursor
+            elif resize_zone == "ne" or resize_zone == "sw":
+                self.canvas.config(cursor="size_ne_sw")  # diagonal resize cursor
+            elif resize_zone == "inside":
+                self.canvas.config(cursor="fleur")  # drag cursor
+            else:
+                self.canvas.config(cursor="arrow")  # default cursor
         else:
             self.canvas.config(cursor="arrow")  # default cursor
 
@@ -83,6 +190,8 @@ class OverlayWindow:
         self.mode = self.MODE_WAITING
         self.selecting = False
         self.dragging = False
+        self.resizing = False
+        self.resize_zone = None
         self.root.withdraw()
         self.ui_panel.hide()
         self.root.after(100, self._update_clickthrough)
@@ -91,6 +200,8 @@ class OverlayWindow:
         self.mode = self.MODE_SELECTION
         self.selecting = True
         self.dragging = False
+        self.resizing = False
+        self.resize_zone = None
         self.start_x = self.start_y = None
         self.root.deiconify()
         self.root.lift()
@@ -103,6 +214,8 @@ class OverlayWindow:
         self.mode = self.MODE_RECORDING
         self.selecting = False
         self.dragging = False
+        self.resizing = False
+        self.resize_zone = None
         self.root.deiconify()
         self.root.lift()
         self.ui_panel.show()
@@ -157,24 +270,31 @@ class OverlayWindow:
             # Selection mode - start new selection
             self.start_x, self.start_y = event.x, event.y
             self.dragging = False
+            self.resizing = False
             if self.rect_id:
                 self.canvas.delete(self.rect_id)
                 self.rect_id = None
-        elif (
-            self.mode == self.MODE_RECORDING
-            and not self.recorder.recording
-            and self.recorder.region
-            and self._is_point_in_region(event.x, event.y)
-        ):
-            # Recording mode but not actively recording - start dragging existing region
-            self.dragging = True
-            self.original_region = self.recorder.region
-            rx, ry, rw, rh = self.recorder.region
-            self.drag_offset_x = event.x - rx
-            self.drag_offset_y = event.y - ry
+        elif self.mode == self.MODE_RECORDING and not self.recorder.recording and self.recorder.region:
+            resize_zone = self._get_resize_zone(event.x, event.y)
+
+            if resize_zone and resize_zone != "inside":
+                # Start resizing
+                self.resizing = True
+                self.resize_zone = resize_zone
+                self.dragging = False
+                self.original_region = self.recorder.region
+                self.start_x, self.start_y = event.x, event.y
+            elif resize_zone == "inside":
+                # Recording mode but not actively recording - start dragging existing region
+                self.dragging = True
+                self.resizing = False
+                self.original_region = self.recorder.region
+                rx, ry, rw, rh = self.recorder.region
+                self.drag_offset_x = event.x - rx
+                self.drag_offset_y = event.y - ry
 
     def _on_mouse_up(self, event):
-        if self.mode == self.MODE_SELECTION and self.start_x is not None and not self.dragging:
+        if self.mode == self.MODE_SELECTION and self.start_x is not None and not self.dragging and not self.resizing:
             # Complete selection
             x0, y0, x1, y1 = self.start_x, self.start_y, event.x, event.y
             x, y = min(x0, x1), min(y0, y1)
@@ -200,13 +320,21 @@ class OverlayWindow:
             self.dragging = False
             self.drag_offset_x = self.drag_offset_y = None
             self.original_region = None
+        elif self.resizing:
+            # Complete resizing - save new region size
+            if self.recorder.region:
+                set_region(self.recorder.region)
+            self.resizing = False
+            self.resize_zone = None
+            self.start_x = self.start_y = None
+            self.original_region = None
 
     def _on_mouse_motion(self, event):
         """Handle mouse motion for cursor updates."""
         self._update_cursor(event.x, event.y)
 
     def _on_mouse_drag(self, event):
-        if self.mode == self.MODE_SELECTION and self.start_x is not None and not self.dragging:
+        if self.mode == self.MODE_SELECTION and self.start_x is not None and not self.dragging and not self.resizing:
             # Selection mode - draw selection rectangle
             if self.rect_id:
                 self.canvas.delete(self.rect_id)
@@ -228,6 +356,12 @@ class OverlayWindow:
             self.recorder.region = new_region
             self._redraw_overlay()
             # Keep UI panel on top during dragging
+            self.ui_panel.button_win.lift()
+        elif self.resizing and self.original_region and self.resize_zone:
+            # Resizing mode - resize the existing region
+            self._handle_resize(event)
+            self._redraw_overlay()
+            # Keep UI panel on top during resizing
             self.ui_panel.button_win.lift()
 
     def show_message(self, text):
