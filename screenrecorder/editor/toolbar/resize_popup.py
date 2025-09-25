@@ -106,7 +106,7 @@ class ResizePopup(ToolPopup):
         ).pack(side=tk.LEFT)
 
         self.width_var = tk.StringVar(value=str(self.original_width))
-        self.width_entry = ui_factory.create_textbox(dimensions_frame, textvariable=self.width_var, width=8)
+        self.width_entry = ui_factory.Textbox(dimensions_frame, textvariable=self.width_var, width=8)
         self.width_entry.pack(side=tk.LEFT, padx=(5, 15))
 
         # X label
@@ -128,7 +128,7 @@ class ResizePopup(ToolPopup):
         ).pack(side=tk.LEFT)
 
         self.height_var = tk.StringVar(value=str(self.original_height))
-        self.height_entry = ui_factory.create_textbox(dimensions_frame, textvariable=self.height_var, width=8)
+        self.height_entry = ui_factory.Textbox(dimensions_frame, textvariable=self.height_var, width=8)
         self.height_entry.pack(side=tk.LEFT, padx=(5, 0))
 
         # Bind focus out events for aspect ratio locking and rounding

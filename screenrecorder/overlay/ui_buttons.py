@@ -9,7 +9,7 @@ import tkinter as tk
 from tkfontawesome import icon_to_image
 from ..config import get_panel_position, set_panel_position
 from .. import theme
-from ..ui_factory import ButtonFactory, FrameFactory
+from ..ui_factory import ButtonFactory
 
 RECORD_LABEL = "Record"
 STOP_LABEL = "Stop"
@@ -30,6 +30,12 @@ class UIButtonPanel:
             on_select: Callback for region selection button
             on_close: Callback for close button
         """
+        self.drag_icon = icon_to_image(
+            "grip-vertical", fill=theme.DRAG_ICON_COLOR, scale_to_width=theme.DRAG_ICON_SIZE // 2
+        )
+        self.rec_icon = icon_to_image("circle", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
+        self.stop_icon = icon_to_image("stop", fill=theme.STOP_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
+
         self._setup_window(parent)
         self._create_buttons(on_record, on_select, on_close)
         self._setup_drag_behavior()
@@ -124,10 +130,9 @@ class UIButtonPanel:
 
     def set_recording_state(self, recording):
         if recording:
-            stop_icon = icon_to_image("stop", fill=theme.STOP_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
             self.record_btn.config(
                 text=STOP_LABEL,
-                image=stop_icon,
+                image=self.stop_icon,
                 bg="#27ae60",
                 fg=theme.BTN_FG,
                 activebackground="#2ecc71",
@@ -137,15 +142,14 @@ class UIButtonPanel:
                 highlightthickness=theme.BTN_BORDER_WIDTH,
                 state="normal",
             )
-            self.record_btn.image = stop_icon
+            self.record_btn.image = self.stop_icon
             # Disable other buttons while recording
             self.select_btn.config(state="disabled")
             self.close_btn.config(state="disabled")
         else:
-            rec_icon = icon_to_image("circle", fill=theme.RECORD_ICON_COLOR, scale_to_width=theme.ICON_SIZE)
             self.record_btn.config(
                 text=RECORD_LABEL,
-                image=rec_icon,
+                image=self.rec_icon,
                 bg=theme.BTN_BG,
                 fg=theme.BTN_FG,
                 activebackground=theme.BTN_ACTIVE_BG,
@@ -155,7 +159,7 @@ class UIButtonPanel:
                 highlightthickness=theme.BTN_BORDER_WIDTH,
                 state="normal",
             )
-            self.record_btn.image = rec_icon
+            self.record_btn.image = self.rec_icon
             # Re-enable other buttons when not recording
             self.select_btn.config(state="normal")
             self.close_btn.config(state="normal")
@@ -164,3 +168,33 @@ class UIButtonPanel:
         self.record_btn.config(state="disabled")
         self.select_btn.config(state="disabled")
         self.close_btn.config(state="disabled")
+
+    def create_drag_handle(self, parent, **kwargs):
+        """
+        Create a drag handle icon for moveable panels.
+
+        Args:
+            parent: Parent widget
+            **kwargs: Additional label configuration options
+
+        Returns:
+            tk.Label: Configured drag handle widget
+        """
+
+        default_config = {
+            "image": self.drag_icon,
+            "bg": theme.DRAG_ICON_BG,
+            "width": 32,
+            "height": 32,
+            "bd": 0,
+            "highlightbackground": theme.OVERLAY_PANEL_BORDER_COLOR,
+            "highlightthickness": 0,
+            "cursor": "fleur",
+        }
+
+        default_config.update(kwargs)
+
+        drag_handle = tk.Label(parent, **default_config)
+        drag_handle.image = self.drag_icon  # Keep reference
+
+        return drag_handle

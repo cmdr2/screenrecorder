@@ -95,54 +95,43 @@ class ButtonFactory:
         return drag_handle
 
 
-class FrameFactory:
-    """Factory for creating styled frames with consistent appearance."""
+class Textbox(tk.Entry):
+    """
+    A themed Entry (textbox) widget using app-wide textbox style constants.
 
-    @staticmethod
-    def create_themed_frame(parent, **kwargs):
+    This class extends tk.Entry to provide a consistent appearance and behavior
+    for text input fields across the application. It applies default styling
+    and allows for additional customization through parameters.
+
+    Example usage:
+        textbox = Textbox(parent, textvariable=my_var, width=20)
+        textbox.pack()
+    """
+
+    def __init__(self, parent, textvariable=None, width=10, **kwargs):
         """
-        Create a frame with theme background color.
+        Initialize the Textbox widget.
 
         Args:
             parent: Parent widget
-            **kwargs: Additional frame configuration options
-
-        Returns:
-            tk.Frame: Configured frame widget
+            textvariable: Optional tk.StringVar for the entry
+            width: Width of the entry (default 10)
+            **kwargs: Additional Entry configuration options
         """
-        default_config = {"bg": theme.COLOR_BG}
-        default_config.update(kwargs)
-
-        return tk.Frame(parent, **default_config)
-
-
-def create_textbox(parent, textvariable=None, width=10, **kwargs):
-    """
-    Create a themed Entry (textbox) widget using app-wide textbox style constants.
-
-    Args:
-        parent: Parent widget
-        textvariable: Optional tk.StringVar for the entry
-        width: Width of the entry (default 10)
-        **kwargs: Additional Entry configuration options
-
-    Returns:
-        tk.Entry: Configured Entry widget
-    """
-    config = {
-        "textvariable": textvariable,
-        "width": width,
-        "font": theme.TEXTBOX_FONT,
-        "justify": "center",
-        "relief": "flat",
-        "highlightthickness": theme.TEXTBOX_BORDER_WIDTH,
-        "highlightbackground": theme.TEXTBOX_BORDER_COLOR,
-        "highlightcolor": theme.TEXTBOX_HIGHLIGHT_COLOR,
-        "bg": theme.TEXTBOX_BG,
-        "fg": theme.TEXTBOX_FG,
-        "insertbackground": theme.TEXTBOX_FG,
-    }
-    config.update(kwargs)
-    # Remove None values (e.g., if textvariable is not provided)
-    config = {k: v for k, v in config.items() if v is not None}
-    return tk.Entry(parent, **config)
+        config = {
+            "textvariable": textvariable,
+            "width": width,
+            "font": theme.TEXTBOX_FONT,
+            "justify": "center",
+            "relief": "flat",
+            "highlightthickness": theme.TEXTBOX_BORDER_WIDTH,
+            "highlightbackground": theme.TEXTBOX_BORDER_COLOR,
+            "highlightcolor": theme.TEXTBOX_HIGHLIGHT_COLOR,
+            "bg": theme.TEXTBOX_BG,
+            "fg": theme.TEXTBOX_FG,
+            "insertbackground": theme.TEXTBOX_FG,
+        }
+        config.update(kwargs)
+        # Remove None values (e.g., if textvariable is not provided)
+        config = {k: v for k, v in config.items() if v is not None}
+        super().__init__(parent, **config)
