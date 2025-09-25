@@ -17,7 +17,7 @@ def create_tray_icon(overlay_app):
     d.rectangle([16, 16, 48, 48], fill=(255, 0, 0))
 
     menu = pystray.Menu(
-        pystray.MenuItem("Record (Alt+S)", lambda icon, item: overlay_app.show()),
+        pystray.MenuItem("Record (Alt+S)", lambda icon, item: overlay_app.show(), default=True),
         pystray.MenuItem("About", open_project_homepage),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem("Quit", quit_app),
