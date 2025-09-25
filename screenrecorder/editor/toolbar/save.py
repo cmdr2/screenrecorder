@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 from ... import theme
+from .button_utils import StylizedButton
 
 
 class Save:
@@ -15,32 +16,10 @@ class Save:
         self.preview_window = toolbar.preview_window
 
     def create_button(self, parent):
-        """Create the save button."""
-        button = tk.Button(
-            parent,
-            text="Save",
-            command=self.save_file,
-            bg=theme.BTN_BG,
-            fg=theme.BTN_FG,
-            font=theme.BTN_FONT,
-            relief=theme.BTN_RELIEF,
-            bd=theme.BTN_BORDER_WIDTH,
-            padx=theme.BTN_PADX,
-            pady=theme.BTN_PADY,
-            cursor="hand2",
+        """Create the save button with FontAwesome icon."""
+        return StylizedButton.create_button(
+            parent=parent, text="Save", icon_name="save", command=self.save_file, active=False
         )
-
-        # Hover effects
-        def on_enter(e):
-            button.config(bg=theme.BTN_ACTIVE_BG)
-
-        def on_leave(e):
-            button.config(bg=theme.BTN_BG)
-
-        button.bind("<Enter>", on_enter)
-        button.bind("<Leave>", on_leave)
-
-        return button
 
     def save_file(self):
         """Save the current video to a file."""

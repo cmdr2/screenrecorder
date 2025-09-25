@@ -11,6 +11,7 @@ import cv2
 from ... import theme
 from ...utils import get_ffmpeg_path
 from ..history import EditHistory
+from .button_utils import StylizedButton
 
 
 class Resize:
@@ -33,34 +34,14 @@ class Resize:
         self.original_height = None
 
     def create_button(self, parent):
-        """Create the resize button."""
-        button = tk.Button(
-            parent,
+        """Create the resize button with FontAwesome icon."""
+        return StylizedButton.create_button(
+            parent=parent,
             text="Resize",
+            icon_name="expand-arrows-alt",
             command=self.toggle_panel,
-            bg=theme.BTN_BG,
-            fg=theme.BTN_FG,
-            font=theme.BTN_FONT,
-            relief=theme.BTN_RELIEF,
-            bd=theme.BTN_BORDER_WIDTH,
-            padx=theme.BTN_PADX,
-            pady=theme.BTN_PADY,
-            cursor="hand2",
+            active=self.is_active(),
         )
-
-        # Hover effects
-        def on_enter(e):
-            if not self.is_active():
-                button.config(bg=theme.BTN_ACTIVE_BG)
-
-        def on_leave(e):
-            if not self.is_active():
-                button.config(bg=theme.BTN_BG)
-
-        button.bind("<Enter>", on_enter)
-        button.bind("<Leave>", on_leave)
-
-        return button
 
     def is_active(self):
         """Check if this module is currently active."""
@@ -68,10 +49,7 @@ class Resize:
 
     def update_button_state(self, button):
         """Update button visual state based on active status."""
-        if self.is_active():
-            button.config(bg=theme.BTN_ACTIVE_BG, fg=theme.BTN_ACTIVE_FG)
-        else:
-            button.config(bg=theme.BTN_BG, fg=theme.BTN_FG)
+        StylizedButton.update_button_state(button, self.is_active())
 
     def toggle_panel(self):
         """Toggle the resize panel visibility."""

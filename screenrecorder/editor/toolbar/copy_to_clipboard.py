@@ -6,6 +6,7 @@ import tkinter as tk
 
 from ... import theme
 from ...utils import copy_files_to_clipboard
+from .button_utils import StylizedButton
 
 
 class CopyToClipboard:
@@ -15,32 +16,10 @@ class CopyToClipboard:
         self.preview_window = toolbar.preview_window
 
     def create_button(self, parent):
-        """Create the copy to clipboard button."""
-        button = tk.Button(
-            parent,
-            text="Copy to Clipboard",
-            command=self.copy_to_clipboard,
-            bg=theme.BTN_BG,
-            fg=theme.BTN_FG,
-            font=theme.BTN_FONT,
-            relief=theme.BTN_RELIEF,
-            bd=theme.BTN_BORDER_WIDTH,
-            padx=theme.BTN_PADX,
-            pady=theme.BTN_PADY,
-            cursor="hand2",
+        """Create the copy to clipboard button with FontAwesome icon."""
+        return StylizedButton.create_button(
+            parent=parent, text="Copy", icon_name="copy", command=self.copy_to_clipboard, active=False
         )
-
-        # Hover effects
-        def on_enter(e):
-            button.config(bg=theme.BTN_ACTIVE_BG)
-
-        def on_leave(e):
-            button.config(bg=theme.BTN_BG)
-
-        button.bind("<Enter>", on_enter)
-        button.bind("<Leave>", on_leave)
-
-        return button
 
     def copy_to_clipboard(self):
         """Copy the current video file to system clipboard."""

@@ -26,13 +26,14 @@ DRAG_ICON_PADY = 6
 # Button
 BTN_BG = "#2c313c"  # Slightly different for button background
 BTN_FG = COLOR_FG
-BTN_ACTIVE_BG = "#344055"
+BTN_ACTIVE_BG = "#404d66"  # More prominent active state
 BTN_ACTIVE_FG = COLOR_FG
+BTN_HOVER_BG = "#374151"  # Subtle hover state
 BTN_BORDER_COLOR = COLOR_BORDER
 BTN_BORDER_WIDTH = 0
 BTN_PADX = 12
 BTN_PADY = 6
-BTN_FONT = ("Segoe UI", 13, "bold")
+BTN_FONT = ("Segoe UI", 12, "normal")  # Slightly smaller, cleaner font
 BTN_RELIEF = "flat"
 
 # Icon Colors
