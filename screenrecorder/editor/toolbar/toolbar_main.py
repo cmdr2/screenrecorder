@@ -1,74 +1,94 @@
 import tkinter as tk
+from tkinter import filedialog
 
 from ... import theme, ui
-from .save import Save
-from .copy_to_clipboard import CopyToClipboard
-from .undo import Undo
 from .resize_popup import ResizePopup
 from .trim_popup import TrimPopup
+from ...utils import copy_files_to_clipboard
+
+SEPARATOR = {"name": "separator"}
 
 
 class Toolbar:
-    def __init__(self, parent, video_player, video_path, preview_window=None):
+    def __init__(self, parent, editor, video_player, video_path, preview_window=None):
         self.parent = parent
+        self.editor = editor
         self.video_player = video_player
         self.video_path = video_path
         self.preview_window = preview_window  # Reference to PreviewEditorWindow for toast messages
         self.video_history = [video_path]  # Track video versions for undo
         self.current_video_index = 0
 
-        # Initialize tools
-        self.save_tool = Save(self)
-        self.copy_tool = CopyToClipboard(self)
-        self.undo_tool = Undo(self)
+        self.menu = [
+            {
+                "save": {"name": "Save", "icon": "save", "command": self.save_file},
+                "copy": {"name": "Copy", "icon": "copy", "command": self.copy_to_clipboard},
+                "undo": {"name": "Undo", "icon": "undo", "command": self.perform_undo, "disabled": True},
+            },
+            {
+                "trim": {"name": "Trim", "icon": "cut", "command": self.open_trim_popup},
+                "resize": {"name": "Resize", "icon": "expand-arrows-alt", "command": self.open_resize_popup},
+            },
+        ]
 
         # Create main toolbar frame
-        self.toolbar_frame = tk.Frame(parent, bg=theme.COLOR_BG)
-        self.toolbar_frame.pack(fill=tk.X, padx=0, pady=0)
+        toolbar_frame = tk.Frame(parent, bg=theme.COLOR_BG)
+        toolbar_frame.pack(side=tk.TOP, fill=tk.X, padx=theme.OVERLAY_PANEL_PADX, pady=theme.OVERLAY_PANEL_PADY)
 
-        # Create buttons frame
-        self.buttons_frame = tk.Frame(self.toolbar_frame, bg=theme.COLOR_BG)
-        self.buttons_frame.pack(side=tk.TOP, fill=tk.X, padx=theme.OVERLAY_PANEL_PADX, pady=theme.OVERLAY_PANEL_PADY)
+        for group in self.menu:
+            frame = tk.Frame(toolbar_frame, bg=theme.COLOR_BG)
+            frame.pack(side=tk.LEFT, padx=(0, 20))
 
-        # Create operations buttons (Save, Copy to Clipboard, Undo)
-        self.operations_frame = tk.Frame(self.buttons_frame, bg=theme.COLOR_BG)
-        self.operations_frame.pack(side=tk.LEFT, padx=(0, 20))
+            for id, item in group.items():
+                btn = ui.Button(
+                    parent=frame,
+                    text=item["name"],
+                    icon_name=item["icon"],
+                    command=item["command"],
+                    hover_highlight=True,
+                )
+                if item.get("disabled", False):
+                    btn.config(state=tk.DISABLED)
 
-        self.save_button = self.save_tool.create_button(self.operations_frame)
-        self.save_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
+                btn.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
 
-        self.copy_button = self.copy_tool.create_button(self.operations_frame)
-        self.copy_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
+                item["button"] = btn  # Store button reference for state updates
 
-        self.undo_button = self.undo_tool.create_button(self.operations_frame)
-        self.undo_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
-
-        # Create modifiers buttons (Trim, Resize) - now use popups
-        self.modifiers_frame = tk.Frame(self.buttons_frame, bg=theme.COLOR_BG)
-        self.modifiers_frame.pack(side=tk.LEFT)
-
-        # Create trim button
-        self.trim_button = ui.Button(
-            parent=self.modifiers_frame,
-            text="Trim",
-            icon_name="cut",
-            command=self.open_trim_popup,
-            hover_highlight=True,
+    def save_file(self):
+        """Save the current video to a file."""
+        save_path = filedialog.asksaveasfilename(
+            defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")], title="Save video as..."
         )
-        self.trim_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
+        if save_path:
+            try:
+                current_video = self.get_current_video_path()
+                with open(current_video, "rb") as src, open(save_path, "wb") as dst:
+                    dst.write(src.read())
+                self.show_success(f"Saved to {save_path}")
+            except Exception as e:
+                self.show_error(f"Failed to save: {e}")
 
-        # Create resize button
-        self.resize_button = ui.Button(
-            parent=self.modifiers_frame,
-            text="Resize",
-            icon_name="expand-arrows-alt",
-            command=self.open_resize_popup,
-            hover_highlight=True,
-        )
-        self.resize_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
+    def copy_to_clipboard(self):
+        """Copy the current video file to system clipboard."""
+        try:
+            current_video = self.get_current_video_path()
+            copy_files_to_clipboard(current_video)
+            self.show_success("Video copied to clipboard!")
+        except Exception as e:
+            self.show_error(f"Failed to copy: {e}")
 
-        # Initialize button states
-        self.update_all_button_states()
+    def perform_undo(self):
+        self.editor.history.undo()
+        self.update_undo_button_state()
+
+    def update_undo_button_state(self):
+        """Enable/disable undo button based on history."""
+
+        button = self.menu[0]["undo"]["button"]
+        if self.editor.history.can_undo():
+            button.config(state=tk.NORMAL)
+        else:
+            button.config(state=tk.DISABLED)
 
     def open_trim_popup(self):
         """Open the trim popup window."""

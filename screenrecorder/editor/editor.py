@@ -3,6 +3,7 @@ from tkinter_videoplayer import VideoPlayer
 
 from .. import theme
 from .toolbar import Toolbar
+from .history import EditHistory
 
 
 class EditorWindow:
@@ -38,11 +39,14 @@ class EditorWindow:
         )
 
         # Create toolbar above the video player
-        self.toolbar = Toolbar(self.root, self.video_player, video_path, self)
+        self.toolbar = Toolbar(self.root, self, self.video_player, video_path, self)
 
         # Pack video player after toolbar
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
         self.filename = video_path
+
+        # History
+        self.history = EditHistory(self.toolbar)
 
     def show_toast(self, message):
         # Create a small label overlay in the window
