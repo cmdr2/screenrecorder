@@ -20,5 +20,5 @@ try:
 except Exception as e:
     print(f"An error occurred: {e}")
 
-print("")
-input("Press Enter to continue...")
+    print("")
+    input("Press Enter to continue...")
