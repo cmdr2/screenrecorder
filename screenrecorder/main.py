@@ -24,7 +24,6 @@ def keep_alive():
 
 
 def main():
-    """Initialize and run the screen recorder application."""
     global overlay_window
 
     recorder = ScreenRecorder()

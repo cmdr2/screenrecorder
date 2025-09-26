@@ -10,8 +10,6 @@ from ... import ui
 
 
 class ToolPopup:
-    """Base class for tool popup windows."""
-
     def __init__(self, parent, title, action_text="Apply"):
         """
         Initialize the popup window.
@@ -107,8 +105,12 @@ class ToolPopup:
         # Wait for window to close
         self.popup_window.wait_window()
 
+    def close(self):
+        """Close the popup window."""
+        self.popup_window.destroy()
+        self.popup_window = None
+
     def _center_on_parent(self):
-        """Center the popup window on the parent window."""
         # Update window to get accurate sizing
         self.popup_window.update_idletasks()
 
@@ -144,7 +146,3 @@ class ToolPopup:
             self.editor.show_error(f"An error occurred: {str(e)}")
 
         self.close()
-
-    def close(self):
-        self.popup_window.destroy()
-        self.popup_window = None

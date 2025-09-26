@@ -7,10 +7,6 @@ from tkinter_videoplayer.events import EventDispatcher
 
 
 class EditHistory(EventDispatcher):
-    """
-    Manages the history of edits for undo functionality.
-    """
-
     def __init__(self):
         super().__init__()
 

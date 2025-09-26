@@ -19,13 +19,6 @@ from ..editor import EditorWindow as PreviewEditorWindow
 
 
 class OverlayWindow:
-    """
-    Main overlay window providing screen recording interface.
-
-    Manages transparent overlay with region selection, recording controls,
-    and mouse interaction handling.
-    """
-
     def __init__(self, recorder):
         self.recorder = recorder
         self.recorder.region = get_region()
@@ -102,14 +95,12 @@ class OverlayWindow:
             self.root.after(500, self._ensure_ui_panel_on_top)
 
     def toggle_recording(self):
-        """Toggle between start and stop recording states."""
         if self.recorder.recording:
             self._stop_recording()
         else:
             self._start_recording()
 
     def _stop_recording(self):
-        """Stop recording and handle post-recording actions."""
         self.recorder.stop()
         self.ui_panel.set_recording_state(False)
         self._redraw_overlay()
@@ -121,14 +112,12 @@ class OverlayWindow:
             self._handle_recorded_video()
 
     def _start_recording(self):
-        """Start recording and update UI state."""
         self.recorder.start()
         self.ui_panel.set_recording_state(True)
         self._redraw_overlay()
         self._update_clickthrough()
 
     def _handle_recorded_video(self):
-        """Handle the recorded video file - copy to clipboard and show preview."""
         from ..utils import copy_files_to_clipboard
 
         try:
@@ -139,7 +128,6 @@ class OverlayWindow:
             print(f"Failed to copy video to clipboard: {e}")
 
     def _on_mouse_down(self, event):
-        """Handle mouse button press events."""
         # Keep UI panel on top during interactions
         if self.mode_manager.is_recording() and not self.recorder.recording:
             self.ui_panel.button_win.lift()
@@ -156,14 +144,12 @@ class OverlayWindow:
                 self.recording_region.start_drag(event.x, event.y)
 
     def _on_mouse_up(self, event):
-        """Handle mouse button release events."""
         if self.mode_manager.is_selecting() and self.start_x is not None and not self.recording_region.is_operating():
             self._complete_region_selection(event)
         elif self.recording_region.is_operating():
             self._complete_region_operation()
 
     def _complete_region_selection(self, event):
-        """Complete region selection and transition to recording mode."""
         x0, y0, x1, y1 = self.start_x, self.start_y, event.x, event.y
         x, y = min(x0, x1), min(y0, y1)
         w, h = abs(x1 - x0), abs(y1 - y0)
@@ -183,27 +169,23 @@ class OverlayWindow:
             self.start_x = self.start_y = None
 
     def _complete_region_operation(self):
-        """Complete region drag/resize operation and save settings."""
         if self.recorder.region:
             set_region(self.recorder.region)
         self.recording_region.finish_operation()
 
     def _on_mouse_motion(self, event):
-        """Handle mouse motion for cursor updates."""
         if self.mode_manager.is_recording() and not self.recorder.recording:
             self.recording_region.update_cursor(event.x, event.y)
         else:
             self.canvas.config(cursor="arrow")
 
     def _on_mouse_drag(self, event):
-        """Handle mouse drag events for selection and region manipulation."""
         if self.mode_manager.is_selecting() and self.start_x is not None and not self.recording_region.is_operating():
             self._draw_selection_rectangle(event)
         elif self.recording_region.is_operating():
             self._handle_region_manipulation(event)
 
     def _draw_selection_rectangle(self, event):
-        """Draw selection rectangle during region selection."""
         if self.rect_id:
             self.canvas.delete(self.rect_id)
         self.rect_id = self.canvas.create_rectangle(
@@ -211,7 +193,6 @@ class OverlayWindow:
         )
 
     def _handle_region_manipulation(self, event):
-        """Handle dragging or resizing of recording region."""
         region_changed = self.recording_region.handle_drag(event.x, event.y) or self.recording_region.handle_resize(
             event.x, event.y
         )
@@ -220,7 +201,6 @@ class OverlayWindow:
             self.ui_panel.button_win.lift()  # Keep UI panel on top
 
     def show_message(self, text):
-        """Display a message in the center of the overlay."""
         if self.msg_id:
             self.canvas.delete(self.msg_id)
         sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
@@ -229,7 +209,6 @@ class OverlayWindow:
         )
 
     def _redraw_overlay(self):
-        """Redraw the overlay based on current mode and state."""
         self.canvas.delete("all")
         sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
 
@@ -246,7 +225,6 @@ class OverlayWindow:
         self._update_transparency()
 
     def _update_transparency(self):
-        """Update window transparency based on current mode."""
         if self.mode_manager.is_selecting():
             self.root.attributes("-alpha", 0.4)
         elif self.mode_manager.is_recording():

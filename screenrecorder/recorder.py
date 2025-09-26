@@ -15,17 +15,7 @@ import signal
 
 
 class ScreenRecorder:
-    """
-    Screen recording class using FFmpeg for video capture.
-
-    Attributes:
-        recording (bool): Whether recording is currently active
-        region (tuple): Screen region to record as (x, y, width, height)
-        temp_video_path (str): Path to temporary video file being recorded
-    """
-
     def __init__(self):
-        """Initialize the screen recorder."""
         self.recording = False
         self.region = None  # (x, y, w, h)
         self.temp_video_path = None

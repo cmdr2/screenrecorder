@@ -6,7 +6,6 @@ import tkinter as tk
 import os
 import subprocess
 import tempfile
-import traceback
 
 from ... import theme
 from ...utils import get_ffmpeg_path
@@ -15,8 +14,6 @@ from .popup_base import ToolPopup
 
 
 class TrimPopup(ToolPopup):
-    """Popup window for trimming videos."""
-
     def __init__(self, parent, editor):
         super().__init__(parent, "Trim Video", "Trim")
 
@@ -29,7 +26,6 @@ class TrimPopup(ToolPopup):
         self.end_time_entry = None
 
     def create_content(self):
-        """Create the trim popup content."""
         # Get video duration
         video_duration = self._get_video_duration()
 
@@ -91,14 +87,12 @@ class TrimPopup(ToolPopup):
         self.end_time_var.set(f"{end_time:.1f}")
 
     def _get_video_duration(self):
-        """Get the duration of the current video."""
         try:
             return round(self.editor.video_player.duration, 1)
         except:
             return 0.0
 
     def apply_action(self):
-        """Apply video trimming using ffmpeg, clamping times to [0, duration]."""
         start_time_str = self.start_time_var.get().strip()
         end_time_str = self.end_time_var.get().strip()
 

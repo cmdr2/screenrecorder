@@ -67,12 +67,6 @@ def copy_files_to_clipboard(file_paths):
 
 
 def _copy_files_to_clipboard_windows(file_paths):
-    """
-    Copy file paths to Windows clipboard using WIN32 API.
-
-    Args:
-        file_paths: List of file paths to copy to clipboard
-    """
     import struct
     import ctypes
     import win32clipboard as wc

@@ -17,8 +17,6 @@ class OverlayMode(Enum):
 
 
 class ModeManager:
-    """Manages overlay window mode transitions and behaviors."""
-
     def __init__(self, overlay_window):
         self.overlay = overlay_window
         self.current_mode = OverlayMode.WAITING

@@ -6,7 +6,6 @@ import tkinter as tk
 import os
 import subprocess
 import tempfile
-import traceback
 import cv2
 
 from ... import theme
@@ -16,8 +15,6 @@ from .popup_base import ToolPopup
 
 
 class ResizePopup(ToolPopup):
-    """Popup window for resizing videos."""
-
     def __init__(self, parent, editor):
         super().__init__(parent, "Resize Video", "Resize")
 
@@ -36,7 +33,6 @@ class ResizePopup(ToolPopup):
         self._updating_dimensions = False  # Flag to prevent infinite loops
 
     def create_content(self):
-        """Create the resize popup content."""
         # Get original video dimensions
         self.original_width, self.original_height = self._get_video_dimensions()
 
@@ -111,11 +107,9 @@ class ResizePopup(ToolPopup):
             return None, None
 
     def _ensure_multiple_of_2(self, value):
-        """Ensure a value is a multiple of 2."""
         return value + (value % 2)
 
     def _update_width_from_height(self, height):
-        """Update width based on height while maintaining aspect ratio."""
         if self.aspect_ratio and not self._updating_dimensions:
             self._updating_dimensions = True
             new_width = self._ensure_multiple_of_2(int(height * self.aspect_ratio))
@@ -123,7 +117,6 @@ class ResizePopup(ToolPopup):
             self._updating_dimensions = False
 
     def _update_height_from_width(self, width):
-        """Update height based on width while maintaining aspect ratio."""
         if self.aspect_ratio and not self._updating_dimensions:
             self._updating_dimensions = True
             new_height = self._ensure_multiple_of_2(int(width / self.aspect_ratio))
@@ -131,7 +124,6 @@ class ResizePopup(ToolPopup):
             self._updating_dimensions = False
 
     def _on_width_focus_out(self, event):
-        """Handle width entry losing focus - apply rounding and aspect ratio locking."""
         try:
             if self._updating_dimensions:
                 return
@@ -148,7 +140,6 @@ class ResizePopup(ToolPopup):
             self.width_var.set(str(self.original_width))
 
     def _on_height_focus_out(self, event):
-        """Handle height entry losing focus - apply rounding and aspect ratio locking."""
         try:
             if self._updating_dimensions:
                 return

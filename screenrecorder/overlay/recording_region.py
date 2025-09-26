@@ -7,26 +7,7 @@ It manages mouse interactions for resizing and dragging the recording area.
 
 
 class RecordingRegion:
-    """
-    Handles recording region manipulation including dragging and resizing.
-
-    This component encapsulates all the logic for:
-    - Detecting mouse position relative to region boundaries
-    - Handling drag operations to move the region
-    - Handling resize operations on region edges/corners
-    - Updating mouse cursor based on current operation
-    """
-
     def __init__(self, canvas, get_region_callback, set_region_callback, get_screen_size_callback):
-        """
-        Initialize the RecordingRegion component.
-
-        Args:
-            canvas: The tkinter Canvas where the region is displayed
-            get_region_callback: Function that returns current region (x, y, w, h)
-            set_region_callback: Function to update the region (x, y, w, h)
-            get_screen_size_callback: Function that returns screen dimensions (width, height)
-        """
         self.canvas = canvas
         self.get_region = get_region_callback
         self.set_region = set_region_callback
@@ -43,7 +24,6 @@ class RecordingRegion:
         self.original_region = None
 
     def reset_state(self):
-        """Reset all drag/resize state variables."""
         self.dragging = False
         self.resizing = False
         self.resize_zone = None
@@ -54,7 +34,6 @@ class RecordingRegion:
         self.original_region = None
 
     def is_point_in_region(self, x, y):
-        """Check if a point is inside the current recording region."""
         region = self.get_region()
         if not region:
             return False
@@ -113,7 +92,6 @@ class RecordingRegion:
         return None
 
     def update_cursor(self, x, y):
-        """Update cursor based on mouse position."""
         region = self.get_region()
         if region:
             resize_zone = self.get_resize_zone(x, y)
@@ -134,7 +112,6 @@ class RecordingRegion:
             self.canvas.config(cursor="arrow")  # default cursor
 
     def start_drag(self, x, y):
-        """Start dragging the region from the given position."""
         region = self.get_region()
         if not region:
             return False
@@ -150,7 +127,6 @@ class RecordingRegion:
         return False
 
     def start_resize(self, x, y):
-        """Start resizing the region from the given position."""
         region = self.get_region()
         if not region:
             return False
@@ -166,7 +142,6 @@ class RecordingRegion:
         return False
 
     def handle_drag(self, x, y):
-        """Handle dragging the region to a new position."""
         if not self.dragging or not self.original_region:
             return False
 
@@ -184,7 +159,6 @@ class RecordingRegion:
         return True
 
     def handle_resize(self, x, y):
-        """Handle resizing the region based on the current resize zone."""
         if not self.resizing or not self.original_region or not self.resize_zone:
             return False
 
@@ -251,11 +225,9 @@ class RecordingRegion:
             self.canvas.create_rectangle(x, y, x + w, y + h, fill="#404040", outline="white", width=2)
 
     def finish_operation(self):
-        """Complete current drag or resize operation and reset state."""
         was_operating = self.dragging or self.resizing
         self.reset_state()
         return was_operating
 
     def is_operating(self):
-        """Check if currently dragging or resizing."""
         return self.dragging or self.resizing

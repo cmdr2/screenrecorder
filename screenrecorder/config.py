@@ -15,7 +15,6 @@ MAIN_PANEL_POSITION = "main_panel_position"
 
 
 def _load_config():
-    """Load configuration data from JSON file."""
     if os.path.exists(CONFIG_FILE):
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -28,7 +27,6 @@ def _load_config():
 
 
 def _save_config(data):
-    """Save configuration data to JSON file."""
     try:
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
