@@ -26,6 +26,10 @@ def keep_alive():
 def main():
     global overlay_window
 
+    print("")
+    print("Screen Recorder is running...")
+    print("Press Alt+S to record the screen")
+
     recorder = ScreenRecorder()
     overlay_window = OverlayWindow(recorder)
 
