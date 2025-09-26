@@ -1,8 +1,5 @@
 """
-UI component factory for creating consistent UI elements.
-
-This module provides factory functions to create common UI components
-with consistent styling and behavior, reducing code duplication.
+UI components for creating consistent UI elements.
 """
 
 import tkinter as tk
@@ -80,15 +77,6 @@ class Textbox(tk.Entry):
     """
 
     def __init__(self, parent, textvariable=None, width=10, **kwargs):
-        """
-        Initialize the Textbox widget.
-
-        Args:
-            parent: Parent widget
-            textvariable: Optional tk.StringVar for the entry
-            width: Width of the entry (default 10)
-            **kwargs: Additional Entry configuration options
-        """
         config = {
             "textvariable": textvariable,
             "width": width,

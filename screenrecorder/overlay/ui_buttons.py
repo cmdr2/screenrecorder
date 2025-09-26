@@ -9,7 +9,7 @@ import tkinter as tk
 from tkfontawesome import icon_to_image
 from ..config import get_panel_position, set_panel_position
 from .. import theme
-from .. import ui_factory
+from .. import ui
 
 RECORD_LABEL = "Record"
 STOP_LABEL = "Stop"
@@ -64,13 +64,13 @@ class UIButtonPanel:
         self.drag_icon.pack(side="left", padx=theme.DRAG_ICON_PADX, pady=theme.DRAG_ICON_PADY)
 
         # Record button
-        self.record_btn = ui_factory.Button(
+        self.record_btn = ui.Button(
             self.button_win, RECORD_LABEL, command=on_record, icon_name="circle", icon_color=theme.RECORD_ICON_COLOR
         )
         self.record_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
         # Region select button
-        self.select_btn = ui_factory.Button(
+        self.select_btn = ui.Button(
             self.button_win,
             SELECT_LABEL,
             command=on_select,
@@ -80,7 +80,7 @@ class UIButtonPanel:
         self.select_btn.pack(side="left", padx=theme.BTN_PACK_PADX)
 
         # Close button
-        self.close_btn = ui_factory.Button(
+        self.close_btn = ui.Button(
             self.button_win, CLOSE_LABEL, command=on_close, icon_name="times", icon_color=theme.RECORD_ICON_COLOR
         )
         self.close_btn.pack(side="left", padx=theme.BTN_PACK_PADX)

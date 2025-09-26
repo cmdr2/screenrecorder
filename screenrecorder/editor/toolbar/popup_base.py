@@ -6,7 +6,7 @@ Provides a reusable popup window with common layout and button handling.
 import tkinter as tk
 from tkinter import ttk
 from ... import theme
-from ... import ui_factory
+from ... import ui
 
 
 class ToolPopup:
@@ -70,7 +70,7 @@ class ToolPopup:
         btns_inner.grid(row=0, column=0)
 
         # Action button
-        self.action_button = ui_factory.PrimaryButton(
+        self.action_button = ui.PrimaryButton(
             btns_inner,
             text=self.action_text,
             command=self.apply_action,
@@ -81,7 +81,7 @@ class ToolPopup:
         self.action_button.pack(side=tk.LEFT, padx=(0, 10))
 
         # Cancel button
-        self.cancel_button = ui_factory.TertiaryButton(
+        self.cancel_button = ui.TertiaryButton(
             btns_inner,
             text="Cancel",
             command=self.cancel,
