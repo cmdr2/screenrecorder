@@ -6,6 +6,8 @@ Made because I'm an idiot, and didn't see that the Windows Snipping Tool has scr
 
 But it was fun to learn Tkinter and build something real with it.
 
+Also ended up building [tkinter-videoplayer](https://github.com/cmdr2/tkinter-videoplayer), which is a useful video player component for Tkinter. In this case, yes, there are alternative components, but they either don't work or require compilation on end-user PCs.
+
 ## Features
 
 - Screen recording functionality
