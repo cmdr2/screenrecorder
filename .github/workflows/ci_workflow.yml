@@ -28,7 +28,7 @@ jobs:
         mkdir -p build_common/bin
         mkdir -p build_common/scripts
 
-        cp -R screenrecorder LICENSE THIRD_PARTY_NOTICES.txt build_common
+        cp -R screenrecorder requirements.txt LICENSE THIRD_PARTY_NOTICES.txt build_common/
         cp scripts/install.py build_common/scripts/
     - name: Create the Windows build
       run: |-
