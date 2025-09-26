@@ -1,12 +1,11 @@
 import tkinter as tk
 
-from ... import theme
+from ... import theme, ui
 from .save import Save
 from .copy_to_clipboard import CopyToClipboard
 from .undo import Undo
 from .resize_popup import ResizePopup
 from .trim_popup import TrimPopup
-from .button_utils import StylizedButton
 
 
 class Toolbar:
@@ -49,22 +48,22 @@ class Toolbar:
         self.modifiers_frame.pack(side=tk.LEFT)
 
         # Create trim button
-        self.trim_button = StylizedButton.create_button(
+        self.trim_button = ui.Button(
             parent=self.modifiers_frame,
             text="Trim",
             icon_name="cut",
             command=self.open_trim_popup,
-            active=False,
+            hover_highlight=True,
         )
         self.trim_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
 
         # Create resize button
-        self.resize_button = StylizedButton.create_button(
+        self.resize_button = ui.Button(
             parent=self.modifiers_frame,
             text="Resize",
             icon_name="expand-arrows-alt",
             command=self.open_resize_popup,
-            active=False,
+            hover_highlight=True,
         )
         self.resize_button.pack(side=tk.LEFT, padx=(0, theme.BTN_PACK_PADX))
 

@@ -17,7 +17,7 @@ class Button(tk.Button):
 
     """
 
-    def __init__(self, parent, text, command=None, icon_name=None, **kwargs):
+    def __init__(self, parent, text, command=None, icon_name=None, hover_highlight=False, **kwargs):
         if icon_name:
             icon_color = kwargs.pop("icon_color", theme.BTN_FG)
             icon_size = kwargs.pop("icon_size", theme.ICON_SIZE)
@@ -44,8 +44,42 @@ class Button(tk.Button):
             config["compound"] = "left"
             self.icon_img = icon_img  # Keep reference to prevent garbage collection
 
+        self.hover_bg = theme.BTN_HOVER_BG if hover_highlight else None
+        self.orig_bg = config["bg"]
+
         config.update(kwargs)
         super().__init__(parent, **config)
+
+        if self.hover_bg:
+            self.bind("<Enter>", self.on_enter)
+            self.bind("<Leave>", self.on_leave)
+
+    def on_enter(self, event):
+        self.config(bg=self.hover_bg)
+
+    def on_leave(self, event):
+        self.config(bg=self.orig_bg)
+
+
+# button = tk.Button(
+#     parent,
+#     text=text,
+#     image=icon_img,
+#     compound="left",
+#     command=command,
+#     bg=theme.BTN_ACTIVE_BG if active else theme.BTN_BG,
+#     fg=theme.BTN_ACTIVE_FG if active else theme.BTN_FG,
+#     font=theme.BTN_FONT,
+#     relief="flat",
+#     bd=0,
+#     padx=theme.BTN_PADX,
+#     pady=theme.BTN_PADY,
+#     cursor="hand2",
+#     # Enhanced styling for modern appearance
+#     highlightcolor=theme.COLOR_PRIMARY,
+#     highlightbackground=theme.BTN_BG,
+#     borderwidth=0,
+# )
 
 
 class PrimaryButton(Button):

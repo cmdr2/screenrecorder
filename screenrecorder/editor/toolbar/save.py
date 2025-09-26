@@ -2,11 +2,9 @@
 Save module for saving video files.
 """
 
-import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 
-from ... import theme
-from .button_utils import StylizedButton
+from ... import ui
 
 
 class Save:
@@ -17,9 +15,7 @@ class Save:
 
     def create_button(self, parent):
         """Create the save button with FontAwesome icon."""
-        return StylizedButton.create_button(
-            parent=parent, text="Save", icon_name="save", command=self.save_file, active=False
-        )
+        return ui.Button(parent=parent, text="Save", icon_name="save", command=self.save_file, hover_highlight=True)
 
     def save_file(self):
         """Save the current video to a file."""

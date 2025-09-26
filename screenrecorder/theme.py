@@ -43,9 +43,9 @@ DRAG_ICON_PADY = 6
 # Button Styling
 BTN_BG = INPUT_COLOR_BG
 BTN_FG = INPUT_COLOR_FG
-BTN_ACTIVE_BG = "#404d66"  # Active button background
+BTN_ACTIVE_BG = "#424f68"  # Active button background
 BTN_ACTIVE_FG = COLOR_FG  # Active button text
-BTN_HOVER_BG = "#374151"  # Hover button background
+BTN_HOVER_BG = "#3A4455"  # Hover button background
 BTN_BORDER_COLOR = COLOR_BORDER
 BTN_BORDER_WIDTH = 0
 BTN_PADX = 12

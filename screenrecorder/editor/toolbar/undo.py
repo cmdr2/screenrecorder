@@ -3,10 +3,8 @@ Undo module for global undo functionality across all video editing operations.
 """
 
 import tkinter as tk
-from tkfontawesome import icon_to_image
-from ... import theme
+from ... import theme, ui
 from ..history import EditHistory
-from .button_utils import StylizedButton
 
 
 class Undo:
@@ -18,12 +16,8 @@ class Undo:
 
     def create_button(self, parent):
         """Create the undo button with FontAwesome icon."""
-        button = StylizedButton.create_button(
-            parent=parent,
-            text="Undo",
-            icon_name="undo",
-            command=self.perform_undo,
-            active=False,
+        button = ui.Button(
+            parent=parent, text="Undo", icon_name="undo", command=self.perform_undo, hover_highlight=True
         )
 
         # Update button state based on history
