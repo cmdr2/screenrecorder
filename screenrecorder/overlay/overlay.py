@@ -11,11 +11,13 @@ import tkinter as tk
 import ctypes
 
 from ..utils import passthrough_mouse_clicks, capture_mouse_clicks
-from ..config import get_region, set_region
+from ..config import get_region
 from .ui_buttons import UIButtonPanel
 from .recording_region import RecordingRegion
-from .mode_manager import ModeManager
-from ..editor import EditorWindow as PreviewEditorWindow
+from .mode_selection import SelectionMode
+from .mode_recording import RecordingMode
+from .mode_ready import ReadyMode
+from .mode_waiting import WaitingMode
 
 
 class OverlayWindow:
@@ -23,7 +25,12 @@ class OverlayWindow:
         self.recorder = recorder
         self.recorder.region = get_region()
 
-        self.mode_manager = ModeManager(self)
+        # Initialize mode handlers
+        self.selection_mode = SelectionMode(self)
+        self.ready_mode = ReadyMode(self)
+        self.recording_mode = RecordingMode(self)
+        self.waiting_mode = WaitingMode(self)
+        self.current_mode = self.waiting_mode
 
         self._setup_window()
         self._setup_ui_components()
@@ -37,7 +44,7 @@ class OverlayWindow:
 
         # Start in waiting mode
         self.root.after(100, self._update_clickthrough)
-        self.mode_manager.enter_waiting_mode()
+        self.enter_waiting_mode()
 
     def _setup_window(self):
         self.root = tk.Tk()
@@ -55,8 +62,8 @@ class OverlayWindow:
         self.ui_panel = UIButtonPanel(
             self.root,
             on_record=self.toggle_recording,
-            on_select=self.mode_manager.enter_selection_mode,
-            on_close=self.mode_manager.enter_waiting_mode,
+            on_select=self.enter_selection_mode,
+            on_close=self.enter_waiting_mode,
         )
 
         # Initialize recording region component
@@ -68,7 +75,7 @@ class OverlayWindow:
         )
 
     def _setup_event_handlers(self):
-        self.root.bind("<Escape>", lambda e: self.mode_manager.enter_waiting_mode())
+        self.root.bind("<Escape>", lambda e: self.enter_waiting_mode())
         self.canvas.bind("<ButtonPress-1>", self._on_mouse_down)
         self.canvas.bind("<B1-Motion>", self._on_mouse_drag)
         self.canvas.bind("<ButtonRelease-1>", self._on_mouse_up)
@@ -78,127 +85,46 @@ class OverlayWindow:
         """Update window click-through behavior based on current mode."""
         hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
 
-        if self.mode_manager.is_selecting():
-            capture_mouse_clicks(hwnd)  # Capture clicks for region selection
-        elif self.mode_manager.is_recording() and not self.recorder.recording:
-            capture_mouse_clicks(hwnd)  # Capture clicks for region manipulation
-        elif self.mode_manager.is_recording() and self.recorder.recording:
-            passthrough_mouse_clicks(hwnd)  # Pass through clicks while recording
+        if self.current_mode.should_capture_clicks():
+            capture_mouse_clicks(hwnd)
         else:
-            passthrough_mouse_clicks(hwnd)  # Default pass-through behavior
+            passthrough_mouse_clicks(hwnd)
 
-    def _ensure_ui_panel_on_top(self):
-        """Periodically ensure UI panel stays on top while in recording mode"""
-        if self.mode_manager.is_recording() and not self.recorder.recording:
-            self.ui_panel.button_win.lift()
-            # Check again after 500ms
-            self.root.after(500, self._ensure_ui_panel_on_top)
+    def enter_waiting_mode(self):
+        self.current_mode.exit()
+        self.current_mode = self.waiting_mode
+        self.current_mode.enter()
+
+    def enter_selection_mode(self):
+        self.current_mode.exit()
+        self.current_mode = self.selection_mode
+        self.current_mode.enter()
+
+    def enter_ready_mode(self):
+        self.current_mode.exit()
+        self.current_mode = self.ready_mode
+        self.current_mode.enter()
+
+    def enter_recording_mode(self):
+        self.current_mode.exit()
+        self.current_mode = self.recording_mode
+        self.current_mode.enter()
 
     def toggle_recording(self):
-        if self.recorder.recording:
-            self._stop_recording()
-        else:
-            self._start_recording()
-
-    def _stop_recording(self):
-        self.recorder.stop()
-        self.ui_panel.set_recording_state(False)
-        self._redraw_overlay()
-        self._update_clickthrough()
-        self.mode_manager.enter_waiting_mode()
-
-        # Handle recorded video
-        if self.recorder.temp_video_path:
-            self._handle_recorded_video()
-
-    def _start_recording(self):
-        self.recorder.start()
-        self.ui_panel.set_recording_state(True)
-        self._redraw_overlay()
-        self._update_clickthrough()
-
-    def _handle_recorded_video(self):
-        from ..utils import copy_files_to_clipboard
-
-        try:
-            copy_files_to_clipboard(self.recorder.temp_video_path)
-            preview = PreviewEditorWindow(self.recorder.temp_video_path)
-            preview.show_toast("Video copied to clipboard!")
-        except Exception as e:
-            print(f"Failed to copy video to clipboard: {e}")
+        if hasattr(self.current_mode, "toggle_recording"):
+            self.current_mode.toggle_recording()
 
     def _on_mouse_down(self, event):
-        # Keep UI panel on top during interactions
-        if self.mode_manager.is_recording() and not self.recorder.recording:
-            self.ui_panel.button_win.lift()
-
-        if self.mode_manager.is_selecting():
-            # Start new region selection
-            self.start_x, self.start_y = event.x, event.y
-            if self.rect_id:
-                self.canvas.delete(self.rect_id)
-                self.rect_id = None
-        elif self.mode_manager.is_recording() and not self.recorder.recording and self.recorder.region:
-            # Try resize first, then drag if not resizing
-            if not self.recording_region.start_resize(event.x, event.y):
-                self.recording_region.start_drag(event.x, event.y)
+        self.current_mode.handle_mouse_down(event)
 
     def _on_mouse_up(self, event):
-        if self.mode_manager.is_selecting() and self.start_x is not None and not self.recording_region.is_operating():
-            self._complete_region_selection(event)
-        elif self.recording_region.is_operating():
-            self._complete_region_operation()
-
-    def _complete_region_selection(self, event):
-        x0, y0, x1, y1 = self.start_x, self.start_y, event.x, event.y
-        x, y = min(x0, x1), min(y0, y1)
-        w, h = abs(x1 - x0), abs(y1 - y0)
-
-        # Ensure dimensions are multiples of 2 for video encoding
-        w += 1 if w % 2 else 0
-        h += 1 if h % 2 else 0
-
-        if w > 10 and h > 10:
-            self.recorder.region = (x, y, w, h)
-            set_region(self.recorder.region)
-            self.selecting = False
-            self.start_x = self.start_y = None
-            self.mode_manager.enter_recording_mode()
-        else:
-            self.show_message("Invalid region, try again")
-            self.start_x = self.start_y = None
-
-    def _complete_region_operation(self):
-        if self.recorder.region:
-            set_region(self.recorder.region)
-        self.recording_region.finish_operation()
+        self.current_mode.handle_mouse_up(event)
 
     def _on_mouse_motion(self, event):
-        if self.mode_manager.is_recording() and not self.recorder.recording:
-            self.recording_region.update_cursor(event.x, event.y)
-        else:
-            self.canvas.config(cursor="arrow")
+        self.current_mode.handle_mouse_motion(event)
 
     def _on_mouse_drag(self, event):
-        if self.mode_manager.is_selecting() and self.start_x is not None and not self.recording_region.is_operating():
-            self._draw_selection_rectangle(event)
-        elif self.recording_region.is_operating():
-            self._handle_region_manipulation(event)
-
-    def _draw_selection_rectangle(self, event):
-        if self.rect_id:
-            self.canvas.delete(self.rect_id)
-        self.rect_id = self.canvas.create_rectangle(
-            self.start_x, self.start_y, event.x, event.y, outline="white", width=2
-        )
-
-    def _handle_region_manipulation(self, event):
-        region_changed = self.recording_region.handle_drag(event.x, event.y) or self.recording_region.handle_resize(
-            event.x, event.y
-        )
-        if region_changed:
-            self._redraw_overlay()
-            self.ui_panel.button_win.lift()  # Keep UI panel on top
+        self.current_mode.handle_mouse_drag(event)
 
     def show_message(self, text):
         if self.msg_id:
@@ -210,42 +136,26 @@ class OverlayWindow:
 
     def _redraw_overlay(self):
         self.canvas.delete("all")
-        sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-
-        # Create black background
-        self.canvas.create_rectangle(0, 0, sw, sh, fill="black")
-
-        # Mode-specific drawing
-        if self.mode_manager.is_selecting():
-            self.show_message("Click-and-drag to select a region")
-        elif self.mode_manager.is_recording() and self.recorder.region:
-            self.recording_region.draw(self.recorder.recording)
-
-        # Set transparency based on mode
+        self.current_mode.draw_overlay()
         self._update_transparency()
 
     def _update_transparency(self):
-        if self.mode_manager.is_selecting():
-            self.root.attributes("-alpha", 0.4)
-        elif self.mode_manager.is_recording():
-            if self.recorder.recording:
-                self.root.attributes("-alpha", 0.7)
-            else:
-                self.root.attributes("-alpha", 0.3)
-                # Keep UI panel on top after redraw
-                self.root.after(1, lambda: self.ui_panel.button_win.lift())
-        else:
-            self.root.attributes("-alpha", 0.7)
+        alpha = self.current_mode.get_transparency()
+        self.root.attributes("-alpha", alpha)
+
+        # Keep UI panel on top for ready mode
+        if self.current_mode == self.ready_mode:
+            self.root.after(1, lambda: self.ui_panel.button_win.lift())
 
     def show(self):
         if self.recorder.region:
-            self.mode_manager.enter_recording_mode()
+            self.enter_ready_mode()
         else:
-            self.mode_manager.enter_selection_mode()
+            self.enter_selection_mode()
 
     def hide(self):
         self.recorder.stop()
-        self.mode_manager.enter_waiting_mode()
+        self.enter_waiting_mode()
 
     def mainloop(self):
         self.root.mainloop()
