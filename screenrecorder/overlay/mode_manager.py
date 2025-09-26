@@ -11,8 +11,6 @@ from enum import Enum
 
 
 class OverlayMode(Enum):
-    """Enumeration of overlay window modes."""
-
     WAITING = "waiting"
     SELECTION = "selection"
     RECORDING = "recording"
@@ -22,12 +20,6 @@ class ModeManager:
     """Manages overlay window mode transitions and behaviors."""
 
     def __init__(self, overlay_window):
-        """
-        Initialize mode manager.
-
-        Args:
-            overlay_window: Reference to the main overlay window
-        """
         self.overlay = overlay_window
         self.current_mode = OverlayMode.WAITING
 
@@ -70,17 +62,13 @@ class ModeManager:
 
     @property
     def mode(self):
-        """Get current mode."""
         return self.current_mode
 
     def is_waiting(self):
-        """Check if in waiting mode."""
         return self.current_mode == OverlayMode.WAITING
 
     def is_selecting(self):
-        """Check if in selection mode."""
         return self.current_mode == OverlayMode.SELECTION
 
     def is_recording(self):
-        """Check if in recording mode."""
         return self.current_mode == OverlayMode.RECORDING

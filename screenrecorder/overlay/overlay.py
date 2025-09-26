@@ -14,7 +14,7 @@ from ..utils import passthrough_mouse_clicks, capture_mouse_clicks
 from ..config import get_region, set_region
 from .ui_buttons import UIButtonPanel
 from .recording_region import RecordingRegion
-from .mode_manager import ModeManager, OverlayMode
+from .mode_manager import ModeManager
 from ..editor import EditorWindow as PreviewEditorWindow
 
 
@@ -27,9 +27,10 @@ class OverlayWindow:
     """
 
     def __init__(self, recorder):
-        """Initialize overlay window with recorder instance."""
         self.recorder = recorder
         self.recorder.region = get_region()
+
+        self.mode_manager = ModeManager(self)
 
         self._setup_window()
         self._setup_ui_components()
@@ -42,12 +43,10 @@ class OverlayWindow:
         self.msg_id = None
 
         # Start in waiting mode
-        self.mode_manager = ModeManager(self)
         self.root.after(100, self._update_clickthrough)
         self.mode_manager.enter_waiting_mode()
 
     def _setup_window(self):
-        """Configure the main overlay window."""
         self.root = tk.Tk()
         self.root.withdraw()
         self.root.overrideredirect(True)
@@ -60,12 +59,11 @@ class OverlayWindow:
         self.canvas.pack(fill="both", expand=True)
 
     def _setup_ui_components(self):
-        """Initialize UI components."""
         self.ui_panel = UIButtonPanel(
             self.root,
             on_record=self.toggle_recording,
-            on_select=self._enter_selection_mode,
-            on_close=self._enter_waiting_mode,
+            on_select=self.mode_manager.enter_selection_mode,
+            on_close=self.mode_manager.enter_waiting_mode,
         )
 
         # Initialize recording region component
@@ -77,8 +75,7 @@ class OverlayWindow:
         )
 
     def _setup_event_handlers(self):
-        """Bind event handlers for user interaction."""
-        self.root.bind("<Escape>", lambda e: self._enter_waiting_mode())
+        self.root.bind("<Escape>", lambda e: self.mode_manager.enter_waiting_mode())
         self.canvas.bind("<ButtonPress-1>", self._on_mouse_down)
         self.canvas.bind("<B1-Motion>", self._on_mouse_drag)
         self.canvas.bind("<ButtonRelease-1>", self._on_mouse_up)
@@ -96,38 +93,6 @@ class OverlayWindow:
             passthrough_mouse_clicks(hwnd)  # Pass through clicks while recording
         else:
             passthrough_mouse_clicks(hwnd)  # Default pass-through behavior
-
-    # Mode transition methods - delegate to mode manager
-    def _enter_waiting_mode(self):
-        """Enter waiting mode via mode manager."""
-        self.mode_manager.enter_waiting_mode()
-
-    def _enter_selection_mode(self):
-        """Enter selection mode via mode manager."""
-        self.mode_manager.enter_selection_mode()
-
-    def _enter_recording_mode(self):
-        """Enter recording mode via mode manager."""
-        self.mode_manager.enter_recording_mode()
-
-    # Legacy properties for backward compatibility
-    @property
-    def mode(self):
-        """Get current mode (for backward compatibility)."""
-        return self.mode_manager.mode.value
-
-    # Convenience methods that delegate to mode manager
-    def enter_waiting_mode(self):
-        """Public method to enter waiting mode."""
-        self._enter_waiting_mode()
-
-    def enter_selection_mode(self):
-        """Public method to enter selection mode."""
-        self._enter_selection_mode()
-
-    def enter_recording_mode(self):
-        """Public method to enter recording mode."""
-        self._enter_recording_mode()
 
     def _ensure_ui_panel_on_top(self):
         """Periodically ensure UI panel stays on top while in recording mode"""
@@ -149,7 +114,7 @@ class OverlayWindow:
         self.ui_panel.set_recording_state(False)
         self._redraw_overlay()
         self._update_clickthrough()
-        self._enter_waiting_mode()
+        self.mode_manager.enter_waiting_mode()
 
         # Handle recorded video
         if self.recorder.temp_video_path:
@@ -212,7 +177,7 @@ class OverlayWindow:
             set_region(self.recorder.region)
             self.selecting = False
             self.start_x = self.start_y = None
-            self._enter_recording_mode()
+            self.mode_manager.enter_recording_mode()
         else:
             self.show_message("Invalid region, try again")
             self.start_x = self.start_y = None
@@ -296,13 +261,13 @@ class OverlayWindow:
 
     def show(self):
         if self.recorder.region:
-            self.enter_recording_mode()
+            self.mode_manager.enter_recording_mode()
         else:
-            self.enter_selection_mode()
+            self.mode_manager.enter_selection_mode()
 
     def hide(self):
         self.recorder.stop()
-        self.enter_waiting_mode()
+        self.mode_manager.enter_waiting_mode()
 
     def mainloop(self):
         self.root.mainloop()
