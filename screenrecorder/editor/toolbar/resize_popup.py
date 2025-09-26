@@ -18,11 +18,10 @@ from .popup_base import ToolPopup
 class ResizePopup(ToolPopup):
     """Popup window for resizing videos."""
 
-    def __init__(self, parent, toolbar):
-        """Initialize the resize popup."""
+    def __init__(self, parent, editor):
         super().__init__(parent, "Resize Video", "Resize")
-        self.toolbar = toolbar
-        self.video_player = toolbar.video_player
+
+        self.editor = editor
 
         # UI components
         self.width_var = None
@@ -125,7 +124,7 @@ class ResizePopup(ToolPopup):
     def _get_video_dimensions(self):
         """Get the original video dimensions using OpenCV."""
         try:
-            current_video = self.toolbar.history.get_current()
+            current_video = self.editor.get_current_file()
             cap = cv2.VideoCapture(current_video)
 
             if cap.isOpened():
@@ -170,7 +169,7 @@ class ResizePopup(ToolPopup):
         try:
             if self._updating_dimensions:
                 return
-            width_str = self.width_var.get().strip()
+            width_str = self.width_var.get().strip() or 0
             if width_str:
                 width = int(width_str)
                 # Ensure multiple of 2
@@ -187,7 +186,7 @@ class ResizePopup(ToolPopup):
         try:
             if self._updating_dimensions:
                 return
-            height_str = self.height_var.get().strip()
+            height_str = self.height_var.get().strip() or 0
             if height_str:
                 height = int(height_str)
                 # Ensure multiple of 2
@@ -201,72 +200,48 @@ class ResizePopup(ToolPopup):
 
     def apply_action(self):
         """Apply video resizing using ffmpeg."""
-        try:
-            width_str = self.width_var.get().strip()
-            height_str = self.height_var.get().strip()
+        width_str = self.width_var.get().strip()
+        height_str = self.height_var.get().strip()
 
-            if not width_str or not height_str:
-                self.show_error("Please enter valid width and height values")
-                return
+        new_width = int(width_str)
+        new_height = int(height_str)
 
-            new_width = int(width_str)
-            new_height = int(height_str)
+        # Check if dimensions have actually changed
+        if new_width == self.original_width and new_height == self.original_height:
+            self.editor.show_info("Dimensions unchanged. No resizing needed.")
+            return
 
-            # Ensure dimensions are multiples of 2
-            new_width = self._ensure_multiple_of_2(new_width)
-            new_height = self._ensure_multiple_of_2(new_height)
+        # Create temporary file for resized video
+        temp_fd, temp_path = tempfile.mkstemp(suffix=".mp4")
+        os.close(temp_fd)
 
-            # Check if dimensions have actually changed
-            if new_width == self.original_width and new_height == self.original_height:
-                self.show_error("No resize needed - dimensions are the same")
-                return
+        # Build ffmpeg command
+        current_video = self.editor.get_current_file()
+        ffmpeg_path = get_ffmpeg_path()
 
-            # Validate minimum dimensions
-            if new_width < 2 or new_height < 2:
-                self.show_error("Dimensions must be at least 2 pixels")
-                return
+        cmd = [
+            ffmpeg_path,
+            "-i",
+            current_video,
+            "-vf",
+            f"scale={new_width}:{new_height}",
+            "-c:a",
+            "copy",  # Copy audio without re-encoding
+            "-y",  # Overwrite output file
+            temp_path,
+        ]
 
-            # Create temporary file for resized video
-            temp_fd, temp_path = tempfile.mkstemp(suffix=".mp4")
-            os.close(temp_fd)
+        # Execute ffmpeg command
+        process = subprocess.run(cmd, capture_output=True, text=True)
 
-            # Build ffmpeg command
-            current_video = self.toolbar.history.get_current()
-            ffmpeg_path = get_ffmpeg_path()
-
-            cmd = [
-                ffmpeg_path,
-                "-i",
-                current_video,
-                "-vf",
-                f"scale={new_width}:{new_height}",
-                "-c:a",
-                "copy",  # Copy audio without re-encoding
-                "-y",  # Overwrite output file
-                temp_path,
-            ]
-
-            # Execute ffmpeg command
-            process = subprocess.run(cmd, capture_output=True, text=True)
-
-            if process.returncode == 0:
-                # Success - update video player and history
-                self.toolbar.history.add(temp_path)
-                self.video_player.src = temp_path
-                self.toolbar.show_success(f"Video resized to {new_width}×{new_height}")
-
-                # Close popup with success result
-                self.close_with_result("success")
-            else:
-                self.show_error(f"Resize failed: {process.stderr}")
-                # Clean up temp file on failure
-                try:
-                    os.unlink(temp_path)
-                except:
-                    pass
-
-        except ValueError:
-            self.show_error("Please enter valid numeric values for dimensions")
-        except Exception as e:
-            traceback.print_exc()
-            self.show_error(f"An error occurred: {str(e)}")
+        if process.returncode == 0:
+            # Success - update video player and history
+            self.editor.history.add(temp_path)
+            self.editor.show_success(f"Video resized to {new_width}×{new_height}")
+        else:
+            self.editor.show_error(f"Resize failed: {process.stderr}")
+            # Clean up temp file on failure
+            try:
+                os.unlink(temp_path)
+            except:
+                pass

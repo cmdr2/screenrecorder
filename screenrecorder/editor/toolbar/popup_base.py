@@ -4,7 +4,7 @@ Provides a reusable popup window with common layout and button handling.
 """
 
 import tkinter as tk
-from tkinter import ttk
+import traceback
 from ... import theme
 from ... import ui
 
@@ -25,7 +25,6 @@ class ToolPopup:
         self.title = title
         self.action_text = action_text
         self.popup_window = None
-        self.result = None  # To store the result when popup is closed
 
         # Content frame to be populated by subclasses
         self.content_frame = None
@@ -47,7 +46,7 @@ class ToolPopup:
         self.popup_window.transient(self.parent)
 
         # Handle window close
-        self.popup_window.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.popup_window.protocol("WM_DELETE_WINDOW", self.close)
 
         # Create main frame
         main_frame = tk.Frame(self.popup_window, bg=theme.COLOR_BG)
@@ -73,7 +72,7 @@ class ToolPopup:
         self.action_button = ui.PrimaryButton(
             btns_inner,
             text=self.action_text,
-            command=self.apply_action,
+            command=self.do_apply_action,
             font=theme.FONT_BOLD,
             padx=theme.POPUP_BTN_PADX,
             pady=theme.POPUP_BTN_PADY,
@@ -84,7 +83,7 @@ class ToolPopup:
         self.cancel_button = ui.TertiaryButton(
             btns_inner,
             text="Cancel",
-            command=self.cancel,
+            command=self.close,
             font=theme.FONT_BOLD,
             padx=theme.POPUP_BTN_PADX,
             pady=theme.POPUP_BTN_PADY,
@@ -102,13 +101,11 @@ class ToolPopup:
         self.popup_window.focus_set()
 
         # Bind Enter and Escape keys
-        self.popup_window.bind("<Return>", lambda e: self.apply_action())
-        self.popup_window.bind("<Escape>", lambda e: self.cancel())
+        self.popup_window.bind("<Return>", self.do_apply_action)
+        self.popup_window.bind("<Escape>", self.close)
 
         # Wait for window to close
         self.popup_window.wait_window()
-
-        return self.result
 
     def _center_on_parent(self):
         """Center the popup window on the parent window."""
@@ -139,41 +136,15 @@ class ToolPopup:
         """Override this method in subclasses to create the popup content."""
         raise NotImplementedError("Subclasses must implement create_content()")
 
-    def apply_action(self):
-        """Override this method in subclasses to handle the action button."""
-        raise NotImplementedError("Subclasses must implement apply_action()")
+    def do_apply_action(self, event=None):
+        try:
+            self.apply_action()
+        except Exception as e:
+            traceback.print_exc()
+            self.editor.show_error(f"An error occurred: {str(e)}")
 
-    def cancel(self):
-        """Handle cancel button or window close."""
-        self.result = None
+        self.close()
+
+    def close(self):
         self.popup_window.destroy()
-
-    def close_with_result(self, result):
-        """Close the popup with a result."""
-        self.result = result
-        self.popup_window.destroy()
-
-    def show_error(self, message):
-        """Show error message in the popup."""
-        # Create a temporary label to show error
-        if hasattr(self, "error_label"):
-            self.error_label.destroy()
-
-        self.error_label = tk.Label(
-            self.content_frame,
-            text=f"⚠️ {message}",
-            bg=theme.COLOR_BG,
-            fg="#ff6b6b",  # Red color for errors
-            font=theme.FONT_ITALIC,
-            wraplength=300,
-        )
-        self.error_label.pack(pady=(5, 0))
-
-        # Auto-hide error after 3 seconds
-        self.popup_window.after(3000, self._hide_error)
-
-    def _hide_error(self):
-        """Hide the error message."""
-        if hasattr(self, "error_label"):
-            self.error_label.destroy()
-            delattr(self, "error_label")
+        self.popup_window = None

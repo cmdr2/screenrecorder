@@ -17,11 +17,10 @@ from .popup_base import ToolPopup
 class TrimPopup(ToolPopup):
     """Popup window for trimming videos."""
 
-    def __init__(self, parent, toolbar):
-        """Initialize the trim popup."""
+    def __init__(self, parent, editor):
         super().__init__(parent, "Trim Video", "Trim")
-        self.toolbar = toolbar
-        self.video_player = toolbar.video_player
+
+        self.editor = editor
 
         # UI components
         self.start_time_var = None
@@ -120,90 +119,84 @@ class TrimPopup(ToolPopup):
     def _get_video_duration(self):
         """Get the duration of the current video."""
         try:
-            return round(self.video_player.duration, 1)
+            return round(self.editor.video_player.duration, 1)
         except:
             return 0.0
 
     def apply_action(self):
         """Apply video trimming using ffmpeg, clamping times to [0, duration]."""
+        start_time_str = self.start_time_var.get().strip()
+        end_time_str = self.end_time_var.get().strip()
+
+        video_duration = self._get_video_duration()
+
+        # Parse and clamp times
         try:
-            start_time_str = self.start_time_var.get().strip()
-            end_time_str = self.end_time_var.get().strip()
+            start_time = float(start_time_str)
+        except ValueError:
+            start_time = 0.0
+        try:
+            end_time = float(end_time_str)
+        except ValueError:
+            end_time = video_duration
 
-            video_duration = self._get_video_duration()
+        # Clamp to [0, video_duration]
+        start_time = max(0.0, min(start_time, video_duration))
+        end_time = max(0.0, min(end_time, video_duration))
 
-            # Parse and clamp times
-            try:
-                start_time = float(start_time_str)
-            except ValueError:
-                start_time = 0.0
-            try:
-                end_time = float(end_time_str)
-            except ValueError:
-                end_time = video_duration
-
-            # Clamp to [0, video_duration]
-            start_time = max(0.0, min(start_time, video_duration))
-            end_time = max(0.0, min(end_time, video_duration))
-
-            # Ensure start < end, else swap
-            if start_time >= end_time:
-                # If both are equal, do nothing; if swapped, fix
-                if start_time == end_time:
-                    # Nothing to trim
-                    self.close_with_result(None)
-                    return
-                start_time, end_time = min(start_time, end_time), max(start_time, end_time)
-
-            # If trimming is not needed (full video), just close
-            if start_time == 0 and end_time >= video_duration:
-                self.close_with_result(None)
+        # Ensure start < end, else swap
+        if start_time >= end_time:
+            # If both are equal, do nothing; if swapped, fix
+            if start_time == end_time:
+                # Nothing to trim
+                self.editor.show_info("Trim range covers entire video. No trimming needed.")
                 return
+            start_time, end_time = min(start_time, end_time), max(start_time, end_time)
 
-            # Update entry fields to reflect clamped values
-            self.start_time_var.set(f"{start_time:.1f}")
-            self.end_time_var.set(f"{end_time:.1f}")
+        # If trimming is not needed (full video), just close
+        if start_time == 0 and end_time >= video_duration:
+            self.editor.show_info("Trim range covers entire video. No trimming needed.")
+            return
 
-            # Create temporary file for trimmed video
-            temp_fd, temp_path = tempfile.mkstemp(suffix=".mp4")
-            os.close(temp_fd)
+        # Update entry fields to reflect clamped values
+        self.start_time_var.set(f"{start_time:.1f}")
+        self.end_time_var.set(f"{end_time:.1f}")
 
-            # Build ffmpeg command
-            current_video = self.toolbar.history.get_current()
-            ffmpeg_path = get_ffmpeg_path()
+        # Create temporary file for trimmed video
+        temp_fd, temp_path = tempfile.mkstemp(suffix=".mp4")
+        os.close(temp_fd)
 
-            duration = end_time - start_time
+        # Build ffmpeg command
+        current_video = self.editor.get_current_file()
+        ffmpeg_path = get_ffmpeg_path()
 
-            cmd = [
-                ffmpeg_path,
-                "-ss",
-                str(start_time),
-                "-i",
-                current_video,
-                "-c",
-                "copy",
-                "-t",
-                str(duration),
-                "-y",  # Overwrite output file
-                temp_path,
-            ]
+        duration = end_time - start_time
 
-            # Execute ffmpeg command
-            process = subprocess.run(cmd, capture_output=True, text=True)
+        cmd = [
+            ffmpeg_path,
+            "-ss",
+            str(start_time),
+            "-i",
+            current_video,
+            "-c",
+            "copy",
+            "-t",
+            str(duration),
+            "-y",  # Overwrite output file
+            temp_path,
+        ]
 
-            if process.returncode == 0:
-                # Success - update video player and history
-                self.toolbar.history.add(temp_path)
-                self.video_player.src = temp_path
-                self.toolbar.show_success(f"Video trimmed from {start_time}s to {end_time}s")
-                self.close_with_result("success")
-            else:
-                # Clean up temp file on failure
-                try:
-                    os.unlink(temp_path)
-                except:
-                    pass
-                self.close_with_result(None)
-        except Exception:
-            traceback.print_exc()
-            self.close_with_result(None)
+        # Execute ffmpeg command
+        process = subprocess.run(cmd, capture_output=True, text=True)
+
+        if process.returncode == 0:
+            # Success - update video player and history
+            self.editor.history.add(temp_path)
+            self.editor.show_success(f"Video trimmed from {start_time}s to {end_time}s")
+        else:
+            self.editor.show_error(f"Trim failed: {process.stderr}")
+            # Clean up temp file on failure
+            try:
+                os.unlink(temp_path)
+            except:
+                pass

@@ -44,7 +44,7 @@ class EditorWindow:
         self.history.add(video_path)
 
         # Create toolbar above the video player
-        self.toolbar = Toolbar(self.root, self.history, self.video_player, video_path, self)
+        self.toolbar = Toolbar(self.root, self)
 
         # Pack video player after toolbar
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
@@ -52,6 +52,9 @@ class EditorWindow:
 
     def on_history_change(self, new_value):
         self.video_player.src = new_value
+
+    def get_current_file(self):
+        return self.history.get_current()
 
     def show_toast(self, message):
         # Create a small label overlay in the window
@@ -76,3 +79,15 @@ class EditorWindow:
         toast.place(x=x, y=y)
         # Remove after 3 seconds
         self.root.after(3000, toast.destroy)
+
+    def show_error(self, message):
+        self.show_toast(f"ERROR: {message}")
+        print(f"Error: {message}")
+
+    def show_success(self, message):
+        self.show_toast(f"SUCCESS: {message}")
+        print(f"Success: {message}")
+
+    def show_info(self, message):
+        self.show_toast(message)
+        print(f"Info: {message}")
