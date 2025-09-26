@@ -12,7 +12,7 @@ import ctypes
 
 from ..utils import passthrough_mouse_clicks, capture_mouse_clicks
 from ..config import get_region
-from .ui_buttons import UIButtonPanel
+from .controls import Controls
 from .recording_region import RecordingRegion
 from .mode_selection import SelectionMode
 from .mode_recording import RecordingMode
@@ -59,7 +59,7 @@ class OverlayWindow:
         self.canvas.pack(fill="both", expand=True)
 
     def _setup_ui_components(self):
-        self.ui_panel = UIButtonPanel(
+        self.controls = Controls(
             self.root,
             on_record=self.toggle_recording,
             on_select=self.enter_selection_mode,
@@ -145,7 +145,7 @@ class OverlayWindow:
 
         # Keep UI panel on top for ready mode
         if self.current_mode == self.ready_mode:
-            self.root.after(1, lambda: self.ui_panel.button_win.lift())
+            self.root.after(1, lambda: self.controls.button_win.lift())
 
     def show(self):
         if self.recorder.region:

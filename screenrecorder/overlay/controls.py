@@ -1,5 +1,5 @@
 """
-UI button panel for overlay controls.
+Controls panel for overlay recording.
 
 This module provides the floating button panel that appears during
 recording mode, containing record/stop, region selection, and close buttons.
@@ -17,7 +17,7 @@ SELECT_LABEL = "Select region to capture"
 CLOSE_LABEL = "Close"
 
 
-class UIButtonPanel:
+class Controls:
     """Floating button panel for overlay recording controls."""
 
     def __init__(self, parent, on_record, on_select, on_close):
