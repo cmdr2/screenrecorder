@@ -9,7 +9,7 @@ class WaitingMode(Mode):
         self.overlay.selecting = False
         self.overlay.recording_region.reset_state()
         self.overlay.root.withdraw()
-        self.overlay.ui_panel.hide()
+        self.overlay.controls.hide()
         self.overlay.root.after(100, self.overlay._update_clickthrough)
 
     def get_transparency(self):

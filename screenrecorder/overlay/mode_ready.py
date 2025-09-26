@@ -10,15 +10,15 @@ class ReadyMode(Mode):
         self.overlay.recording_region.reset_state()
         self.overlay.root.deiconify()
         self.overlay.root.lift()
-        self.overlay.ui_panel.show()
-        self.overlay.root.after(0, lambda: self.overlay.ui_panel.set_recording_state(False))
+        self.overlay.controls.show()
+        self.overlay.root.after(0, lambda: self.overlay.controls.set_recording_state(False))
         self.overlay._redraw_overlay()
-        self.overlay.root.after(10, lambda: self.overlay.ui_panel.button_win.lift())
-        self._ensure_ui_panel_on_top()
+        self.overlay.root.after(10, lambda: self.overlay.controls.button_win.lift())
+        self._ensure_controls_on_top()
         self.overlay._update_clickthrough()
 
     def handle_mouse_down(self, event):
-        self.overlay.ui_panel.button_win.lift()
+        self.overlay.controls.button_win.lift()
         if self.overlay.recorder.region:
             if not self.overlay.recording_region.start_resize(event.x, event.y):
                 self.overlay.recording_region.start_drag(event.x, event.y)
@@ -40,7 +40,7 @@ class ReadyMode(Mode):
         ) or self.overlay.recording_region.handle_resize(event.x, event.y)
         if region_changed:
             self.overlay._redraw_overlay()
-            self.overlay.ui_panel.button_win.lift()
+            self.overlay.controls.button_win.lift()
 
     def _complete_region_operation(self):
         if self.overlay.recorder.region:
@@ -49,16 +49,16 @@ class ReadyMode(Mode):
             set_region(self.overlay.recorder.region)
         self.overlay.recording_region.finish_operation()
 
-    def _ensure_ui_panel_on_top(self):
-        self.overlay.ui_panel.button_win.lift()
-        self.overlay.root.after(500, self._ensure_ui_panel_on_top)
+    def _ensure_controls_on_top(self):
+        self.overlay.controls.button_win.lift()
+        self.overlay.root.after(500, self._ensure_controls_on_top)
 
     def toggle_recording(self):
         self._start_recording()
 
     def _start_recording(self):
         self.overlay.recorder.start()
-        self.overlay.ui_panel.set_recording_state(True)
+        self.overlay.controls.set_recording_state(True)
         self.overlay.enter_recording_mode()
 
     def draw_overlay(self):

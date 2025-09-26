@@ -16,7 +16,7 @@ class SelectionMode(Mode):
         self.overlay.recording_region.reset_state()
         self.overlay.root.deiconify()
         self.overlay.root.lift()
-        self.overlay.ui_panel.hide()
+        self.overlay.controls.hide()
         self.overlay.show_message("Click-and-drag to select a region")
         self.overlay._redraw_overlay()
         self.overlay._update_clickthrough()

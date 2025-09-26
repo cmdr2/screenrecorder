@@ -1,6 +1,9 @@
-class RecordingMode:
+from .mode import Mode
+
+
+class RecordingMode(Mode):
     def __init__(self, overlay):
-        self.overlay = overlay
+        super().__init__(overlay)
 
     def enter(self):
         # Recording mode assumes we're already recording
@@ -8,36 +11,20 @@ class RecordingMode:
         self.overlay.recording_region.reset_state()
         self.overlay.root.deiconify()
         self.overlay.root.lift()
-        self.overlay.ui_panel.show()
+        self.overlay.controls.show()
         self.overlay._redraw_overlay()
         self.overlay._update_clickthrough()
-
-    def exit(self):
-        pass
-
-    def handle_mouse_down(self, event):
-        # No interaction allowed during recording
-        pass
-
-    def handle_mouse_drag(self, event):
-        # No interaction allowed during recording
-        pass
-
-    def handle_mouse_up(self, event):
-        # No interaction allowed during recording
-        pass
 
     def handle_mouse_motion(self, event):
         # Fixed cursor during recording
         self.overlay.canvas.config(cursor="arrow")
 
     def toggle_recording(self):
-        # Only stop recording is allowed
         self._stop_recording()
 
     def _stop_recording(self):
         self.overlay.recorder.stop()
-        self.overlay.ui_panel.set_recording_state(False)
+        self.overlay.controls.set_recording_state(False)
         self.overlay.enter_waiting_mode()
 
         if self.overlay.recorder.temp_video_path:
