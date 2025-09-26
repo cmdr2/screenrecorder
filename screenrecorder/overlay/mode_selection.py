@@ -1,4 +1,4 @@
-from .mode import Mode
+from .types import Mode
 
 
 class SelectionMode(Mode):
