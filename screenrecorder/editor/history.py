@@ -3,91 +3,45 @@ History module for managing video editing operations with Apply/Undo functionali
 This module provides a shared history system that can be used by all toolbar tools.
 """
 
-import tkinter as tk
-from .. import theme
+from tkinter_videoplayer.events import EventDispatcher
 
 
-class EditHistory:
+class EditHistory(EventDispatcher):
     """
-    Manages the history of video edits for undo functionality.
-    Each toolbar tool can use this to maintain a consistent undo system.
+    Manages the history of edits for undo functionality.
     """
 
-    def __init__(self, toolbar):
-        self.toolbar = toolbar
-        self.video_player = toolbar.video_player
-        self.preview_window = toolbar.preview_window
+    def __init__(self):
+        super().__init__()
 
-    def add_to_history(self, video_path):
-        """Add a new video to the history."""
+        self.history = []
+        self.current_index = -1
+
+    def add(self, value):
         # Remove any history after current index (if user undid and then made new changes)
-        self.toolbar.video_history = self.toolbar.video_history[: self.toolbar.current_video_index + 1]
+        self.history = self.history[: self.current_index + 1]
 
-        # Add new video
-        self.toolbar.video_history.append(video_path)
-        self.toolbar.current_video_index += 1
+        # Add new entry
+        self.history.append(value)
+        self.current_index += 1
 
-        # Update undo button state in toolbar
-        if hasattr(self.toolbar, "undo_tool") and hasattr(self.toolbar, "undo_button"):
-            self.toolbar.undo_tool.update_button_state(self.toolbar.undo_button)
+        # Dispatch events
+        self.dispatch_event("change", new_value=value)
 
     def can_undo(self):
-        """Check if undo operation is possible."""
-        return self.toolbar.current_video_index > 0
+        return self.current_index > 0
 
     def undo(self):
-        """Undo the last operation."""
         if self.can_undo():
-            self.toolbar.current_video_index -= 1
-            previous_video = self.toolbar.video_history[self.toolbar.current_video_index]
-            self.video_player.src = previous_video
-            self.toolbar.show_success("Undo successful!")
+            self.current_index -= 1
+            previous = self.history[self.current_index]
 
-            # Update undo button state in toolbar
-            if hasattr(self.toolbar, "undo_tool") and hasattr(self.toolbar, "undo_button"):
-                self.toolbar.undo_tool.update_button_state(self.toolbar.undo_button)
+            # Dispatch events
+            self.dispatch_event("change", new_value=previous)
 
             return True
         return False
 
-    def get_current_video_path(self):
-        """Get the path of the currently active video."""
-        return self.toolbar.video_history[self.toolbar.current_video_index]
-
-    def create_undo_button(self, parent, command_callback=None):
-        """
-        Create a standardized undo button that can be used by any tool.
-
-        Args:
-            parent: The parent widget to attach the button to
-            command_callback: Optional callback to run after undo (for tool-specific cleanup)
-        """
-
-        def undo_command():
-            success = self.undo()
-            if success and command_callback:
-                command_callback()
-
-        undo_button = tk.Button(
-            parent,
-            text="Undo",
-            command=undo_command,
-            bg=theme.COLOR_TERTIARY,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-            relief=theme.BTN_RELIEF,
-            bd=0,
-            padx=12,
-            pady=4,
-            cursor="hand2",
-        )
-
-        return undo_button
-
-    def update_undo_button_state(self, button):
-        """Enable/disable undo button based on history."""
-        if button and button.winfo_exists():
-            if self.can_undo():
-                button.config(state=tk.NORMAL, bg=theme.COLOR_TERTIARY)
-            else:
-                button.config(state=tk.DISABLED, bg="#555")
+    def get_current(self):
+        """Get the currently active entry."""
+        return self.history[self.current_index]

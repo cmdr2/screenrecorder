@@ -6,10 +6,10 @@ import tkinter as tk
 import os
 import subprocess
 import tempfile
+import traceback
 
 from ... import theme
 from ...utils import get_ffmpeg_path
-from ..history import EditHistory
 from ... import ui
 from .popup_base import ToolPopup
 
@@ -22,7 +22,6 @@ class TrimPopup(ToolPopup):
         super().__init__(parent, "Trim Video", "Trim")
         self.toolbar = toolbar
         self.video_player = toolbar.video_player
-        self.history = EditHistory(toolbar)
 
         # UI components
         self.start_time_var = None
@@ -170,7 +169,7 @@ class TrimPopup(ToolPopup):
             os.close(temp_fd)
 
             # Build ffmpeg command
-            current_video = self.history.get_current_video_path()
+            current_video = self.toolbar.history.get_current()
             ffmpeg_path = get_ffmpeg_path()
 
             duration = end_time - start_time
@@ -194,7 +193,7 @@ class TrimPopup(ToolPopup):
 
             if process.returncode == 0:
                 # Success - update video player and history
-                self.history.add_to_history(temp_path)
+                self.toolbar.history.add(temp_path)
                 self.video_player.src = temp_path
                 self.toolbar.show_success(f"Video trimmed from {start_time}s to {end_time}s")
                 self.close_with_result("success")
@@ -206,4 +205,5 @@ class TrimPopup(ToolPopup):
                     pass
                 self.close_with_result(None)
         except Exception:
+            traceback.print_exc()
             self.close_with_result(None)

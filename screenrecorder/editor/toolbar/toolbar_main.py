@@ -10,9 +10,9 @@ SEPARATOR = {"name": "separator"}
 
 
 class Toolbar:
-    def __init__(self, parent, editor, video_player, video_path, preview_window=None):
+    def __init__(self, parent, history, video_player, video_path, preview_window=None):
         self.parent = parent
-        self.editor = editor
+        self.history = history
         self.video_player = video_player
         self.video_path = video_path
         self.preview_window = preview_window  # Reference to PreviewEditorWindow for toast messages
@@ -54,6 +54,8 @@ class Toolbar:
 
                 item["button"] = btn  # Store button reference for state updates
 
+        self.history.add_event_listener("change", self.update_undo_button_state)
+
     def save_file(self):
         """Save the current video to a file."""
         save_path = filedialog.asksaveasfilename(
@@ -78,14 +80,12 @@ class Toolbar:
             self.show_error(f"Failed to copy: {e}")
 
     def perform_undo(self):
-        self.editor.history.undo()
-        self.update_undo_button_state()
+        self.history.undo()
+        self.show_success("Undo successful!")
 
-    def update_undo_button_state(self):
-        """Enable/disable undo button based on history."""
-
+    def update_undo_button_state(self, new_value):
         button = self.menu[0]["undo"]["button"]
-        if self.editor.history.can_undo():
+        if self.history.can_undo():
             button.config(state=tk.NORMAL)
         else:
             button.config(state=tk.DISABLED)

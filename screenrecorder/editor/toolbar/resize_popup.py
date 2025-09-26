@@ -6,12 +6,12 @@ import tkinter as tk
 import os
 import subprocess
 import tempfile
+import traceback
 import cv2
 
 from ... import theme
 from ... import ui
 from ...utils import get_ffmpeg_path
-from ..history import EditHistory
 from .popup_base import ToolPopup
 
 
@@ -23,7 +23,6 @@ class ResizePopup(ToolPopup):
         super().__init__(parent, "Resize Video", "Resize")
         self.toolbar = toolbar
         self.video_player = toolbar.video_player
-        self.history = EditHistory(toolbar)
 
         # UI components
         self.width_var = None
@@ -41,21 +40,6 @@ class ResizePopup(ToolPopup):
         """Create the resize popup content."""
         # Get original video dimensions
         self.original_width, self.original_height = self._get_video_dimensions()
-
-        if self.original_width is None or self.original_height is None:
-            # Show error message if we can't get dimensions
-            error_label = tk.Label(
-                self.content_frame,
-                text="⚠️ Could not get video dimensions",
-                bg=theme.COLOR_BG,
-                fg=theme.COLOR_TERTIARY,
-                font=theme.FONT_ITALIC,
-            )
-            error_label.pack(pady=20)
-
-            # Disable action button
-            self.action_button.config(state="disabled")
-            return
 
         # Calculate aspect ratio
         self.aspect_ratio = self.original_width / self.original_height
@@ -141,7 +125,7 @@ class ResizePopup(ToolPopup):
     def _get_video_dimensions(self):
         """Get the original video dimensions using OpenCV."""
         try:
-            current_video = self.history.get_current_video_path()
+            current_video = self.toolbar.history.get_current()
             cap = cv2.VideoCapture(current_video)
 
             if cap.isOpened():
@@ -247,7 +231,7 @@ class ResizePopup(ToolPopup):
             os.close(temp_fd)
 
             # Build ffmpeg command
-            current_video = self.history.get_current_video_path()
+            current_video = self.toolbar.history.get_current()
             ffmpeg_path = get_ffmpeg_path()
 
             cmd = [
@@ -267,7 +251,7 @@ class ResizePopup(ToolPopup):
 
             if process.returncode == 0:
                 # Success - update video player and history
-                self.history.add_to_history(temp_path)
+                self.toolbar.history.add(temp_path)
                 self.video_player.src = temp_path
                 self.toolbar.show_success(f"Video resized to {new_width}×{new_height}")
 
@@ -284,4 +268,5 @@ class ResizePopup(ToolPopup):
         except ValueError:
             self.show_error("Please enter valid numeric values for dimensions")
         except Exception as e:
+            traceback.print_exc()
             self.show_error(f"An error occurred: {str(e)}")

@@ -33,20 +33,25 @@ class EditorWindow:
         self.root.attributes("-topmost", True)
         self.root.after(500, lambda: self.root.attributes("-topmost", False))  # Remove topmost after focus
 
+        # History
+        self.history = EditHistory()
+        self.history.add_event_listener("change", self.on_history_change)
+
         # Video player component (with controls, autoplay options)
         self.video_player = VideoPlayer(
             self.root, video_path=video_path, width=640, height=480, controls=True, autoplay=True
         )
+        self.history.add(video_path)
 
         # Create toolbar above the video player
-        self.toolbar = Toolbar(self.root, self, self.video_player, video_path, self)
+        self.toolbar = Toolbar(self.root, self.history, self.video_player, video_path, self)
 
         # Pack video player after toolbar
         self.video_player.frame.pack(fill=tk.BOTH, expand=True)
         self.filename = video_path
 
-        # History
-        self.history = EditHistory(self.toolbar)
+    def on_history_change(self, new_value):
+        self.video_player.src = new_value
 
     def show_toast(self, message):
         # Create a small label overlay in the window
