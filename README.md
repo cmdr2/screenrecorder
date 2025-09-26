@@ -8,6 +8,9 @@ A Python-based screen recording application with video editing capabilities.
 - Built-in video preview and editing
 - User-friendly interface
 
+## Run using:
+`python -m screenrecorder.main`
+
 ## Third-Party Software
 
 This application includes FFmpeg for video processing:
