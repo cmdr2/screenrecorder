@@ -8,15 +8,6 @@ from . import theme
 
 
 class Button(tk.Button):
-    """
-    A themed Button widget using app-wide button style constants.
-
-    This class extends tk.Button to provide a consistent appearance and behavior
-    for buttons across the application. It applies default styling and allows
-    for additional customization through parameters.
-
-    """
-
     def __init__(self, parent, text, command=None, icon_name=None, hover_highlight=False, **kwargs):
         if icon_name:
             icon_color = kwargs.pop("icon_color", theme.BTN_FG)
@@ -61,25 +52,9 @@ class Button(tk.Button):
         self.config(bg=self.orig_bg)
 
 
-# button = tk.Button(
-#     parent,
-#     text=text,
-#     image=icon_img,
-#     compound="left",
-#     command=command,
-#     bg=theme.BTN_ACTIVE_BG if active else theme.BTN_BG,
-#     fg=theme.BTN_ACTIVE_FG if active else theme.BTN_FG,
-#     font=theme.BTN_FONT,
-#     relief="flat",
-#     bd=0,
-#     padx=theme.BTN_PADX,
-#     pady=theme.BTN_PADY,
-#     cursor="hand2",
-#     # Enhanced styling for modern appearance
-#     highlightcolor=theme.COLOR_PRIMARY,
-#     highlightbackground=theme.BTN_BG,
-#     borderwidth=0,
-# )
+class Label(tk.Label):
+    def __init__(self, parent, text, font=theme.FONT_NORMAL, bg=theme.COLOR_BG, fg=theme.COLOR_FG, **kwargs):
+        super().__init__(parent, text=text, font=font, bg=bg, fg=fg, **kwargs)
 
 
 class PrimaryButton(Button):
@@ -98,18 +73,6 @@ class TertiaryButton(Button):
 
 
 class Textbox(tk.Entry):
-    """
-    A themed Entry (textbox) widget using app-wide textbox style constants.
-
-    This class extends tk.Entry to provide a consistent appearance and behavior
-    for text input fields across the application. It applies default styling
-    and allows for additional customization through parameters.
-
-    Example usage:
-        textbox = Textbox(parent, textvariable=my_var, width=20)
-        textbox.pack()
-    """
-
     def __init__(self, parent, textvariable=None, width=10, **kwargs):
         config = {
             "textvariable": textvariable,

@@ -34,12 +34,8 @@ class TrimPopup(ToolPopup):
         video_duration = self._get_video_duration()
 
         # Instructions
-        instructions_label = tk.Label(
-            self.content_frame,
-            text="Set the start and end times to trim your video (in seconds)",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_NORMAL,
+        instructions_label = ui.Label(
+            self.content_frame, text="Set the start and end times to trim your video (in seconds)"
         )
         instructions_label.pack(pady=(0, 15))
 
@@ -51,15 +47,7 @@ class TrimPopup(ToolPopup):
         start_row = tk.Frame(times_frame, bg=theme.COLOR_BG)
         start_row.pack(fill=tk.X, pady=(0, 10))
 
-        tk.Label(
-            start_row,
-            text="Start Time",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-            width=12,
-            anchor="w",
-        ).pack(side=tk.LEFT)
+        ui.Label(start_row, text="Start Time", font=theme.FONT_BOLD, width=12, anchor="w").pack(side=tk.LEFT)
 
         self.start_time_var = tk.StringVar(value="0.0")
         self.start_time_entry = ui.Textbox(start_row, textvariable=self.start_time_var, width=10)
@@ -68,27 +56,13 @@ class TrimPopup(ToolPopup):
         # Clamp value on unfocus
         self.start_time_entry.bind("<FocusOut>", lambda e: self.clamp_time_entries())
 
-        tk.Label(
-            start_row,
-            text="sec",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_TERTIARY,
-            font=theme.FONT_NORMAL,
-        ).pack(side=tk.LEFT, padx=(5, 0))
+        ui.Label(start_row, text="sec", fg=theme.COLOR_TERTIARY).pack(side=tk.LEFT, padx=(5, 0))
 
         # End time (single row)
         end_row = tk.Frame(times_frame, bg=theme.COLOR_BG)
         end_row.pack(fill=tk.X)
 
-        tk.Label(
-            end_row,
-            text="End Time",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-            width=12,
-            anchor="w",
-        ).pack(side=tk.LEFT)
+        ui.Label(end_row, text="End Time", font=theme.FONT_BOLD, width=12, anchor="w").pack(side=tk.LEFT)
 
         self.end_time_var = tk.StringVar(value=f"{video_duration:.1f}")
         self.end_time_entry = ui.Textbox(end_row, textvariable=self.end_time_var, width=10)

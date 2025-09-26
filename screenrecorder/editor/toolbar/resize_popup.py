@@ -47,68 +47,34 @@ class ResizePopup(ToolPopup):
         original_frame = tk.Frame(self.content_frame, bg=theme.COLOR_BG)
         original_frame.pack(fill=tk.X, pady=(0, 15))
 
-        tk.Label(
-            original_frame,
-            text="Original Size:",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-        ).pack(side=tk.LEFT)
+        ui.Label(original_frame, text="Original Size:", font=theme.FONT_BOLD).pack(side=tk.LEFT)
 
-        tk.Label(
-            original_frame,
-            text=f"{self.original_width} × {self.original_height}",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_NORMAL,
-        ).pack(side=tk.LEFT, padx=(10, 0))
+        ui.Label(original_frame, text=f"{self.original_width} × {self.original_height}").pack(
+            side=tk.LEFT, padx=(10, 0)
+        )
 
         # New size frame
         new_size_frame = tk.Frame(self.content_frame, bg=theme.COLOR_BG)
         new_size_frame.pack(fill=tk.X, pady=(0, 10))
 
-        tk.Label(
-            new_size_frame,
-            text="New Size:",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-        ).pack(anchor=tk.W)
+        ui.Label(new_size_frame, text="New Size:", font=theme.FONT_BOLD).pack(anchor=tk.W)
 
         # Dimension inputs frame
         dimensions_frame = tk.Frame(new_size_frame, bg=theme.COLOR_BG)
         dimensions_frame.pack(anchor=tk.W, pady=(5, 0))
 
         # Width entry
-        tk.Label(
-            dimensions_frame,
-            text="Width:",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_NORMAL,
-        ).pack(side=tk.LEFT)
+        ui.Label(dimensions_frame, text="Width:").pack(side=tk.LEFT)
 
         self.width_var = tk.StringVar(value=str(self.original_width))
         self.width_entry = ui.Textbox(dimensions_frame, textvariable=self.width_var, width=8)
         self.width_entry.pack(side=tk.LEFT, padx=(5, 15))
 
         # X label
-        tk.Label(
-            dimensions_frame,
-            text="×",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_BOLD,
-        ).pack(side=tk.LEFT, padx=(0, 15))
+        ui.Label(dimensions_frame, text="×", font=theme.FONT_BOLD).pack(side=tk.LEFT, padx=(0, 15))
 
         # Height entry
-        tk.Label(
-            dimensions_frame,
-            text="Height:",
-            bg=theme.COLOR_BG,
-            fg=theme.COLOR_FG,
-            font=theme.FONT_NORMAL,
-        ).pack(side=tk.LEFT)
+        ui.Label(dimensions_frame, text="Height:").pack(side=tk.LEFT)
 
         self.height_var = tk.StringVar(value=str(self.original_height))
         self.height_entry = ui.Textbox(dimensions_frame, textvariable=self.height_var, width=8)
