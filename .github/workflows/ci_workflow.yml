@@ -17,8 +17,8 @@ jobs:
       uses: actions/checkout@v4
     - name: Fetch ffmpeg static binaries for win and linux
       run: |-
-        wget -O /tmp/ffmpeg-win64.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
-        wget -O /tmp/ffmpeg-linux64.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+        wget -q -O /tmp/ffmpeg-win64.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+        wget -q -O /tmp/ffmpeg-linux64.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
 
         unzip -q /tmp/ffmpeg-win64.zip -d /tmp/ffmpeg_win64
         mkdir -p /tmp/ffmpeg_linux64
