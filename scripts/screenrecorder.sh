@@ -2,7 +2,7 @@
 
 # install if necessary
 if [ ! -d ".venv" ]; then
-    python scripts/install.sh
+    python scripts/install.py
 fi
 
 # activate .venv
