@@ -2,6 +2,10 @@
 
 A Python-based screen recording application with video editing capabilities.
 
+Made because I'm an idiot, and didn't see that the Windows Snipping Tool has screen video-recording.
+
+But it was fun to learn Tkinter and build something real with it.
+
 ## Features
 
 - Screen recording functionality
