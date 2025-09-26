@@ -1,7 +1,7 @@
 # Screen Recorder
 A Python-based screen recording application with video editing capabilities.
 
-Yes, there are alternatives (e.g. the Windows Snipping Tool's video-recording mode). But I needed certain specific features for my workflow, like persistent recording regions (across restarts), quick video resize etc.
+Yes, there are alternatives (e.g. the Windows Snipping Tool's video-recording mode). But I needed certain specific features for my workflow, like persistent recording regions (across restarts), quick video resize etc. And it's open source, so you can customize it for your needs as well.
 
 And it was fun to learn Tkinter and build something real with it. Also ended up building [tkinter-videoplayer](https://github.com/cmdr2/tkinter-videoplayer), which is a useful video player component for Tkinter.
 
@@ -11,6 +11,7 @@ And it was fun to learn Tkinter and build something real with it. Also ended up 
 - User-friendly interface
 - Persistent recording regions
 - Trim and Resize tools
+- Free and fully open source (MIT)
 
 ## Run using:
 `python -m screenrecorder.main`
