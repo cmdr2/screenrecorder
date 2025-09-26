@@ -18,9 +18,6 @@ class Button(tk.Button):
     for buttons across the application. It applies default styling and allows
     for additional customization through parameters.
 
-    Example usage:
-        btn = Button(parent, text="Click Me", command=my_callback)
-        btn.pack()
     """
 
     def __init__(self, parent, text, command=None, icon_name=None, **kwargs):
@@ -44,7 +41,6 @@ class Button(tk.Button):
             "highlightthickness": theme.BTN_BORDER_WIDTH,
             "padx": theme.BTN_PADX,
             "pady": theme.BTN_PADY,
-            "cursor": "hand2",
         }
         if icon_name:
             config["image"] = icon_img
@@ -53,6 +49,21 @@ class Button(tk.Button):
 
         config.update(kwargs)
         super().__init__(parent, **config)
+
+
+class PrimaryButton(Button):
+    def __init__(self, parent, text, command=None, icon_name=None, **kwargs):
+        super().__init__(parent, text, command, icon_name, bg=theme.COLOR_PRIMARY, fg=theme.COLOR_FG, **kwargs)
+
+
+class SecondaryButton(Button):
+    def __init__(self, parent, text, command=None, icon_name=None, **kwargs):
+        super().__init__(parent, text, command, icon_name, bg=theme.COLOR_SECONDARY, fg=theme.COLOR_FG, **kwargs)
+
+
+class TertiaryButton(Button):
+    def __init__(self, parent, text, command=None, icon_name=None, **kwargs):
+        super().__init__(parent, text, command, icon_name, bg=theme.COLOR_TERTIARY, fg=theme.COLOR_FG, **kwargs)
 
 
 class Textbox(tk.Entry):
