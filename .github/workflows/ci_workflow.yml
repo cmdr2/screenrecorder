@@ -18,9 +18,11 @@ jobs:
     - name: Fetch ffmpeg static binaries for win and linux
       run: |-
         wget -O /tmp/ffmpeg-win64.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
-        wget -O /tmp/ffmpeg-linux64.zip https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
-        unzip /tmp/ffmpeg-win64.zip -d /tmp/ffmpeg_win64
-        tar -xf /tmp/ffmpeg-linux64.zip -C /tmp/ffmpeg_linux64
+        wget -O /tmp/ffmpeg-linux64.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+
+        unzip -q /tmp/ffmpeg-win64.zip -d /tmp/ffmpeg_win64
+        mkdir -p /tmp/ffmpeg_linux64
+        tar -xf /tmp/ffmpeg-linux64.tar.xz -C /tmp/ffmpeg_linux64
     - name: Create the common build artifacts
       run: |-
         mkdir -p build_common/bin
