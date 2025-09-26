@@ -59,7 +59,7 @@ class ToolPopup:
 
         # Create buttons frame
         buttons_frame = tk.Frame(main_frame, bg=theme.COLOR_BG)
-        buttons_frame.pack(fill=tk.X, pady=(10, 0))
+        buttons_frame.pack(fill=tk.X)
 
         # Center the buttons in the frame
         buttons_frame.grid_columnconfigure(0, weight=1)

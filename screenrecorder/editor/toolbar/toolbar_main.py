@@ -44,6 +44,7 @@ class Toolbar:
                     icon_name=item["icon"],
                     command=item["command"],
                     hover_highlight=True,
+                    pady=theme.TOOLBAR_BTN_PADY,
                 )
                 if item.get("disabled", False):
                     btn.config(state=tk.DISABLED)
