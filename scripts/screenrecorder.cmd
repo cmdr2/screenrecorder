@@ -9,4 +9,4 @@ if not exist .venv (
 call .venv\Scripts\activate.bat
 
 @rem start without blocking the window, allowing it to close
-start /B pythonw -m screenrecorder.main
+start /B python -m screenrecorder.main
