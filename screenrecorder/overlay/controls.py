@@ -61,7 +61,7 @@ class Controls:
         """Create all buttons using the button factory."""
         # Drag handle
         self.drag_icon = self.create_drag_handle(self.button_win)
-        self.drag_icon.pack(side="left", padx=theme.DRAG_ICON_PADX, pady=theme.DRAG_ICON_PADY)
+        self.drag_icon.pack(side="left", pady=theme.DRAG_ICON_PADY)
 
         # Record button
         self.record_btn = ui.Button(
