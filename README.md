@@ -1,5 +1,5 @@
 # Screen Recorder
-A Python-based screen recording application with video editing capabilities.
+A simple, open source screen recorder. Drag-select and Record.
 
 Yes, there are alternatives (e.g. the Windows Snipping Tool's video-recording mode). But I needed certain specific features for my workflow, like persistent recording regions (across restarts), quick video resize etc. And it's open source, so you can customize it for your needs as well.
 
@@ -8,13 +8,21 @@ And it was fun to learn Tkinter and build something real with it. Also ended up 
 ## Features
 - Screen recording functionality
 - Built-in video preview and editing
-- User-friendly interface
-- Persistent recording regions
 - Trim and Resize tools
+- Persistent recording regions
+- User-friendly interface
 - Free and fully open source (MIT)
 
+## Install
+Download for:
+* [Windows](https://github.com/cmdr2/screenrecorder/releases/latest/download/screenrecorder-win-x86_64.zip)
+* [Linux](https://github.com/cmdr2/screenrecorder/releases/latest/download/screenrecorder-linux-x86_64.zip)
+
+And then extract the zip file.
+
 ## Run using:
-`python -m screenrecorder.main`
+* Windows: Double-click `screenrecorder.cmd`
+* Linux: Run `./screenrecorder.sh`
 
 ## Third-Party Software
 
