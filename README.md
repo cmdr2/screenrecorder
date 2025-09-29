@@ -14,11 +14,11 @@ And it was fun to learn Tkinter and build something real with it. Also ended up 
 - Free and fully open source (MIT)
 
 ## Install
-Download for:
+1. Install [Python](https://www.python.org/downloads/).
+2. Then download screenrecorder for:
 * [Windows](https://github.com/cmdr2/screenrecorder/releases/latest/download/screenrecorder-win-x86_64.zip)
 * [Linux](https://github.com/cmdr2/screenrecorder/releases/latest/download/screenrecorder-linux-x86_64.zip)
-
-And then extract the zip file.
+3. Finally, extract the zip file.
 
 ## Run using:
 * Windows: Double-click `screenrecorder.cmd`
