@@ -20,7 +20,7 @@ And it was fun to learn Tkinter and build something real with it. Also ended up 
 
 ## Run using:
 * Windows: Double-click `screenrecorder.cmd`
-* Linux: Run `./screenrecorder.sh`
+* Linux: Run `sh screenrecorder.sh`
 
 ## Third-Party Software
 
