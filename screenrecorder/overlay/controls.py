@@ -107,6 +107,9 @@ class Controls:
             win_h = max(self.record_btn.winfo_reqheight(), self.select_btn.winfo_reqheight()) + 20
         if self.position:
             x, y = self.position
+            # Ensure panel stays within screen bounds
+            x = max(0, min(x, sw - win_w))
+            y = max(0, min(y, sh - win_h))
         else:
             x = (sw - win_w) // 2
             y = int(sh * 0.9 - win_h // 2)
